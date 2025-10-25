@@ -12,7 +12,7 @@ export default function LandingLayout({ children }: PropsWithChildren) {
                     <div className="flex justify-between items-center h-16">
                         {/* Logo */}
                         <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition">
-                            🎥 MoodFix
+                             <img src="/assets/logo.png" alt="TQido Logo" className="h-27 w-auto"/>
                         </Link>
 
                         {/* Navigation Links - Desktop */}

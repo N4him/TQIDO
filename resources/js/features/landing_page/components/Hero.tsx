@@ -111,7 +111,7 @@ export default function Hero({ canRegister = true }: HeroProps) {
                         </div>
                         <div className="absolute bottom-6 right-6">
                             <div className="w-28 h-28 bg-cyan-400 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                                <span className="text-6xl">😌</span>
+                                <span className="text-6xl">👴</span>
                             </div>
                         </div>
                     </div>
