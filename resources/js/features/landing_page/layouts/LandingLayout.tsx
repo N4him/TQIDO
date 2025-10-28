@@ -18,19 +18,19 @@ export default function LandingLayout({ children }: PropsWithChildren) {
                         {/* Navigation Links - Desktop */}
                         <div className="hidden md:flex items-center gap-8">
                             <a href="#features" className="text-gray-600 hover:text-gray-900 transition font-medium">
-                                Features
+                                Conoce más
                             </a>
                             <a href="#services" className="text-gray-600 hover:text-gray-900 transition font-medium">
-                                Services
+                                Servicios
                             </a>
                             <a href="#testimonials" className="text-gray-600 hover:text-gray-900 transition font-medium">
-                                Testimonials
+                                Testimonios
                             </a>
                             <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition font-medium">
-                                Pricing
+                                Precios
                             </a>
                             <a href="#contact" className="text-gray-600 hover:text-gray-900 transition font-medium">
-                                Contact
+                                Contacto
                             </a>
                         </div>
 
@@ -40,13 +40,13 @@ export default function LandingLayout({ children }: PropsWithChildren) {
                                 // Usuario autenticado
                                 <>
                                     <span className="hidden sm:inline text-sm text-gray-600">
-                                        Hello, {auth.user.name}!
+                                        Hola, {auth.user.name}!
                                     </span>
                                     <Link
                                         href="/settings/profile"
                                         className="text-gray-600 hover:text-gray-900 font-medium transition"
                                     >
-                                        Settings
+                                        Configuración
                                     </Link>
                                 </>
                             ) : (
@@ -56,13 +56,13 @@ export default function LandingLayout({ children }: PropsWithChildren) {
                                         href="/login"
                                         className="text-gray-600 hover:text-gray-900 font-medium transition"
                                     >
-                                        Log in
+                                        Iniciar sesión
                                     </Link>
                                     <Link
                                         href="/register"
                                         className="px-6 py-2 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-all hover:shadow-lg"
                                     >
-                                        Try for free
+                                        Prueba gratis
                                     </Link>
                                 </>
                             )}

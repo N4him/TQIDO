@@ -9,28 +9,20 @@ export default function Hero({ canRegister = true }: HeroProps) {
         <section className="min-h-screen flex items-center justify-center px-4">
             <div className="max-w-7xl mx-auto w-full py-20">
                 <div className="text-center mb-16">
-                    {/* Badge con usuarios */}
-                    <div className="flex justify-center items-center gap-2 mb-8 animate-fade-in">
-                        <div className="flex -space-x-2">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white shadow-md"></div>
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 border-2 border-white shadow-md"></div>
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 border-2 border-white shadow-md"></div>
-                        </div>
-                        <span className="text-sm text-gray-600 font-medium">Over 1k happy users</span>
-                    </div>
+                    {/*Espacio para circulitos*/}
 
                     {/* Título Principal */}
                     <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-gray-900 mb-6 leading-tight">
-                        Regulate your mood <br />
-                        <span className="bg-gradient-to-r from-blue-600 via-pink-600 to-orange-600 bg-clip-text text-transparent">
-                            with our videos
+                        Somos expertos <br />
+                        <span className="bg-gradient-to-r from-purple-500 via-blue-700 to-green-500 bg-clip-text text-transparent">
+                            en el cuidado de tus seres amados
                         </span>
                     </h1>
 
                     {/* Subtítulo */}
                     <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-                        Our pre-recorded sessions contain all the essentials
-                        to help you fix your mood in four sessions
+                        Descubre todos los servicios que tenemos para cada uno
+                        de tus seres queridos 
                     </p>
 
                     {/* CTA Buttons */}
@@ -39,7 +31,7 @@ export default function Hero({ canRegister = true }: HeroProps) {
                             href={canRegister ? "/register" : "#"}
                             className="group px-8 py-4 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all hover:shadow-2xl inline-flex items-center justify-center gap-2"
                         >
-                            Play Video
+                            Ver vídeo
                             <svg 
                                 className="w-5 h-5 group-hover:translate-x-1 transition-transform" 
                                 fill="currentColor" 
@@ -54,7 +46,7 @@ export default function Hero({ canRegister = true }: HeroProps) {
                             href="#features"
                             className="px-8 py-4 bg-white text-gray-800 rounded-full font-semibold hover:bg-gray-50 transition-all border-2 border-gray-200 hover:border-gray-300 hover:shadow-lg"
                         >
-                            Learn More
+                            Ver más
                         </a>
                     </div>
                 </div>
@@ -62,7 +54,7 @@ export default function Hero({ canRegister = true }: HeroProps) {
                 {/* Cards Coloridas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mt-20">
                     {/* Card Azul - Sol Feliz */}
-                    <div className="group relative bg-gradient-to-br from-blue-300 to-blue-500 rounded-3xl p-8 h-72 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl cursor-pointer">
+                    <div className="group relative bg-gradient-to-br from-purple-100 to-purple-300 rounded-3xl p-8 h-72 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl cursor-pointer">
                         <div className="absolute top-6 right-6">
                             <div className="text-3xl animate-pulse">⭐</div>
                         </div>
@@ -80,7 +72,7 @@ export default function Hero({ canRegister = true }: HeroProps) {
                     </div>
 
                     {/* Card Rosa - Paz */}
-                    <div className="group relative bg-gradient-to-br from-pink-300 to-pink-500 rounded-3xl p-8 h-72 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl cursor-pointer">
+                    <div className="group relative bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl p-8 h-72 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl cursor-pointer">
                         <div className="absolute top-6 left-6">
                             <div className="text-3xl animate-pulse">✨</div>
                         </div>
@@ -90,17 +82,17 @@ export default function Hero({ canRegister = true }: HeroProps) {
                             </div>
                             <div className="flex gap-3 justify-center">
                                 <div className="w-16 h-16 bg-yellow-300 rounded-full flex items-center justify-center shadow-xl group-hover:rotate-12 transition-transform">
-                                    <span className="text-4xl">🌼</span>
+                                    <span className="text-4xl">👦</span>
                                 </div>
                                 <div className="w-16 h-16 bg-yellow-300 rounded-full flex items-center justify-center shadow-xl group-hover:-rotate-12 transition-transform">
-                                    <span className="text-4xl">🌼</span>
+                                    <span className="text-4xl">👧</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Card Naranja - Flor Sonriente */}
-                    <div className="group relative bg-gradient-to-br from-orange-300 to-orange-500 rounded-3xl p-8 h-72 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl cursor-pointer">
+                    <div className="group relative bg-gradient-to-br from-green-100 to-green-300 rounded-3xl p-8 h-72 overflow-hidden transform hover:scale-105 transition-all duration-300 hover:shadow-2xl cursor-pointer">
                         <div className="absolute top-6 left-6">
                             <div className="w-18 h-18 bg-yellow-300 rounded-full flex items-center justify-center shadow-xl group-hover:rotate-45 transition-transform">
                                 <span className="text-4xl">🌻</span>
