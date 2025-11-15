@@ -64,7 +64,7 @@
 :root {
     /* Colores base de TQido */
     --background: #ffffff;
-    --foreground: #1d3557; /* texto principal oscuro */
+    --foreground: #324f79; /* texto principal oscuro */
 
     --card: #ffffff;
     --card-foreground: #1d3557;
@@ -98,8 +98,8 @@
 }
 
 .dark {
-    --background: #1d3557;
-    --foreground: #ffffff;
+    --background: #2e6fba;
+    --foreground: #76a4d2;
 
     --card: #243b66;
     --card-foreground: #ffffff;
@@ -136,7 +136,19 @@
         @apply border-border;
     }
 
+    /* FIX: Prevenir scroll horizontal en toda la aplicación */
+    html,
     body {
         @apply bg-background text-foreground;
+        overflow-x: hidden;
+        max-width: 100vw;
+        position: relative;
+    }
+
+    /* Asegurar que todos los contenedores principales no creen overflow */
+    #app,
+    main {
+        overflow-x: hidden;
+        max-width: 100vw;
     }
 }

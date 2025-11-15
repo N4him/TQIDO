@@ -20,7 +20,7 @@ export default function Home({ canRegister = true }: HomeProps) {
             <Head title="Regulate your mood with our videos - MoodFix" />
             
             {/* Hero Section */}
-            <Hero canRegister={canRegister} />
+            <Hero />
             
             {/* Features Section */}
             <Features />
