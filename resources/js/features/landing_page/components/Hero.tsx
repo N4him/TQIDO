@@ -100,20 +100,10 @@ export default function Hero() {
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
-                                <button className="group px-6 sm:px-8 py-3 sm:py-4 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all hover:shadow-2xl inline-flex items-center justify-center gap-2 text-sm sm:text-base">
+                                <button className="group px-6 sm:px-8 py-3 sm:py-4 bg-foreground text-white rounded-full font-semibold hover:bg-[#21456b] transition-colors duration-300 hover:shadow-2xl inline-flex items-center justify-center gap-2 text-sm sm:text-base">
                                     Ver vídeo
-                                    <svg 
-                                        className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" 
-                                        fill="currentColor" 
-                                        viewBox="0 0 20 20"
-                                    >
-                                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-                                    </svg>
                                 </button>
                                 
-                                <button className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-gray-800 rounded-full font-semibold hover:bg-gray-50 transition-all border-2 border-gray-200 hover:border-gray-300 hover:shadow-lg text-sm sm:text-base">
-                                    Ver más
-                                </button>
                             </div>
                         </div>
 

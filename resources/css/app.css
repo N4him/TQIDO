@@ -99,7 +99,8 @@
 
 .dark {
     --background: #2e6fba;
-    --foreground: #76a4d2;
+    --foreground: #71aedd
+;
 
     --card: #243b66;
     --card-foreground: #ffffff;
@@ -137,7 +138,9 @@
     }
 
     /* FIX: Prevenir scroll horizontal en toda la aplicación */
-    html,
+html {
+  scroll-behavior: smooth;
+}    
     body {
         @apply bg-background text-foreground;
         overflow-x: hidden;

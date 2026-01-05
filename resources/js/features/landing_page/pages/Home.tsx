@@ -17,33 +17,40 @@ interface HomeProps {
 export default function Home({ canRegister = true }: HomeProps) {
     return (
         <LandingLayout>
-            <Head title="Regulate your mood with our videos - MoodFix" />
+            <Head title="TQido" />
             
-            {/* Hero Section */}
-            <Hero />
+            <div id="hero">
+                <Hero />
+            </div>
             
-            {/* Features Section */}
-            <Features />
+            <div id="features">
+                <Features />
+            </div>
             
-            {/* About Section */}
-            <About />
+            <div id="about">
+                <About />
+            </div>
             
-            {/* Services Section */}
-            <Services />
+            <div id="services">
+                <Services />
+            </div>
             
-            {/* Testimonials Section */}
-            <Testimonials />
+            <div id="testimonials">
+                <Testimonials />
+            </div>
             
-            {/* Pricing Section */}
-            <Pricing />
+            <div id="pricing">
+                <Pricing />
+            </div>
             
-            {/* CTA Section */}
-            <CTA />
+            <div id="cta">
+                <CTA />
+            </div>
             
-            {/* Contact Section */}
-            <Contact />
+            <div id="contact">
+                <Contact />
+            </div>
             
-            {/* Footer */}
             <Footer />
         </LandingLayout>
     );

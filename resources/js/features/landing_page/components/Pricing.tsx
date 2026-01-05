@@ -1,214 +1,247 @@
-import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function Pricing() {
-    const plans = [
+    const [activeSlide, setActiveSlide] = useState(0);
+
+    const slides = [
         {
-            id: 1,
-            name: "Free",
-            price: "0",
-            period: "forever",
-            description: "Perfect for trying out our platform",
-            features: [
-                "5 video sessions per month",
-                "Basic mood tracking",
-                "Mobile access",
-                "Community support"
-            ],
-            notIncluded: [
-                "Premium content",
-                "Personalized recommendations",
-                "Offline downloads",
-                "Priority support"
-            ],
-            cta: "Get Started",
-            popular: false,
-            color: "border-gray-200"
+            side: 'left',
+            badge: '👨‍👩‍👧‍👦 PARA CLIENTES',
+            title: 'Encuentra el cuidado perfecto',
+            subtitle: 'para tu familia',
+            description: 'Conecta con cuidadores verificados y profesionales. Protege lo que más amas con confianza y tranquilidad.',
+            cta: 'Ver planes',
+            bgColor: 'from-blue-500 to-blue-600',
+            plans: [
+                { name: 'Básico', price: '$0' },
+                { name: 'Premium', price: '$19.99' },
+                { name: 'Familia Plus', price: '$39.99' }
+            ]
         },
         {
-            id: 2,
-            name: "Pro",
-            price: "9.99",
-            period: "month",
-            description: "For serious mood management",
-            features: [
-                "Unlimited video sessions",
-                "Advanced mood tracking",
-                "All device access",
-                "Personalized recommendations",
-                "Offline downloads",
-                "Priority email support",
-                "Ad-free experience",
-                "Early access to new content"
-            ],
-            notIncluded: [],
-            cta: "Start Free Trial",
-            popular: true,
-            color: "border-blue-500"
-        },
-        {
-            id: 3,
-            name: "Lifetime",
-            price: "199",
-            period: "one-time",
-            description: "Invest in your wellbeing forever",
-            features: [
-                "Everything in Pro",
-                "Lifetime access",
-                "All future updates",
-                "VIP support",
-                "Exclusive content",
-                "Beta features access",
-                "Annual wellness report",
-                "Private coaching sessions (4/year)"
-            ],
-            notIncluded: [],
-            cta: "Get Lifetime Access",
-            popular: false,
-            color: "border-purple-500"
+            side: 'right',
+            badge: '💼 PARA CUIDADORES',
+            title: 'Crece tu carrera profesional',
+            subtitle: 'y aumenta tus ingresos',
+            description: 'Accede a más oportunidades, reduce tus comisiones y destaca como profesional elite en nuestra plataforma.',
+            cta: 'Comenzar ahora',
+            bgColor: 'from-orange-400 to-orange-500',
+            plans: [
+                { name: 'Starter', price: '$0' },
+                { name: 'Profesional', price: '$29.99' },
+                { name: 'Elite', price: '$59.99' }
+            ]
         }
     ];
 
+    const currentSlide = slides[activeSlide];
+
     return (
-        <section id="pricing" className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
-                <div className="text-center mb-16">
-                    <div className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-4">
-                        Pricing Plans
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                        Choose your plan
-                    </h2>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                        Start free, upgrade when you're ready. No hidden fees, cancel anytime.
-                    </p>
-                </div>
-
-                {/* Pricing Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                    {plans.map((plan) => (
+        <section className="relative h-screen w-full overflow-hidden">
+            {/* Split Screen Container */}
+            <div className="absolute inset-0 flex">
+                {/* LEFT SIDE - CLIENTES */}
+                <div 
+                    className={`w-1/2 bg-gradient-to-br from-blue-500 to-blue-600 relative transition-all duration-1000 ease-out ${
+                        activeSlide === 0 ? 'flex-1' : 'w-1/2 opacity-50'
+                    }`}
+                    onClick={() => setActiveSlide(0)}
+                >
+                    <div className={`absolute inset-0 flex flex-col justify-center items-start px-12 lg:px-20 text-white transition-all duration-1000 ${
+                        activeSlide === 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
+                    }`}>
+                        {/* Badge */}
                         <div 
-                            key={plan.id}
-                            className={`relative rounded-3xl border-2 ${plan.color} p-8 ${
-                                plan.popular 
-                                    ? 'bg-gradient-to-br from-blue-50 to-white shadow-2xl transform md:-translate-y-4 md:scale-105' 
-                                    : 'bg-white shadow-lg hover:shadow-xl'
-                            } transition-all duration-300`}
+                            className={`inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6 border border-white/30 transition-all duration-700 delay-100 ${
+                                activeSlide === 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                            }`}
                         >
-                            {/* Popular Badge */}
-                            {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                                    <span className="inline-block px-4 py-1 bg-blue-600 text-white text-sm font-bold rounded-full shadow-lg">
-                                        MOST POPULAR
-                                    </span>
-                                </div>
-                            )}
-
-                            {/* Plan Name */}
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                                {plan.name}
-                            </h3>
-
-                            {/* Description */}
-                            <p className="text-gray-600 mb-6">
-                                {plan.description}
-                            </p>
-
-                            {/* Price */}
-                            <div className="mb-6">
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-5xl font-bold text-gray-900">
-                                        ${plan.price}
-                                    </span>
-                                    <span className="text-gray-600">
-                                        /{plan.period}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* CTA Button */}
-                            <Link
-                                href="/register"
-                                className={`block w-full py-4 rounded-full font-semibold text-center transition-all mb-8 ${
-                                    plan.popular
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                                        : 'bg-gray-900 text-white hover:bg-gray-800'
-                                }`}
-                            >
-                                {plan.cta}
-                            </Link>
-
-                            {/* Features List */}
-                            <div className="space-y-4">
-                                <div className="text-sm font-semibold text-gray-900 mb-3">
-                                    What's included:
-                                </div>
-                                {plan.features.map((feature, index) => (
-                                    <div key={index} className="flex items-start gap-3">
-                                        <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-gray-700">{feature}</span>
-                                    </div>
-                                ))}
-
-                                {/* Not Included */}
-                                {plan.notIncluded.length > 0 && (
-                                    <>
-                                        <div className="text-sm font-semibold text-gray-900 mb-3 mt-6">
-                                            Not included:
-                                        </div>
-                                        {plan.notIncluded.map((feature, index) => (
-                                            <div key={index} className="flex items-start gap-3">
-                                                <svg className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                </svg>
-                                                <span className="text-gray-500">{feature}</span>
-                                            </div>
-                                        ))}
-                                    </>
-                                )}
-                            </div>
+                            👨‍👩‍👧‍👦 PARA CLIENTES
                         </div>
-                    ))}
+
+                        {/* Title */}
+                        <h1 
+                            className={`text-5xl lg:text-7xl font-black leading-tight mb-4 uppercase transition-all duration-700 delay-200 ${
+                                activeSlide === 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                            }`}
+                        >
+                            Encuentra el<br />
+                            cuidado<br />
+                            perfecto
+                        </h1>
+
+                        {/* Description */}
+                        <p 
+                            className={`text-lg lg:text-xl text-white/90 max-w-md mb-8 leading-relaxed transition-all duration-700 delay-300 ${
+                                activeSlide === 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                            }`}
+                        >
+                            Conecta con cuidadores verificados y profesionales. Protege lo que más amas con confianza.
+                        </p>
+
+                        {/* CTA Button */}
+                        <button 
+                            className={`group inline-flex items-center gap-3 px-8 py-4 bg-white text-blue-600 rounded-full font-bold text-lg hover:bg-blue-50 transition-all duration-700 delay-400 hover:shadow-2xl hover:scale-105 ${
+                                activeSlide === 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                            }`}
+                        >
+                            Ver planes
+                            <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                        </button>
+
+                        {/* Decorative Elements */}
+                        <div className="absolute bottom-10 left-12 lg:left-20 flex gap-3">
+                            <div className={`w-12 h-1 rounded-full transition-all ${activeSlide === 0 ? 'bg-white' : 'bg-white/30'}`}></div>
+                            <div className={`w-12 h-1 rounded-full transition-all ${activeSlide === 1 ? 'bg-white' : 'bg-white/30'}`}></div>
+                        </div>
+
+                        {/* Price Tags Floating */}
+                        <div className="absolute top-1/3 right-10 space-y-4 hidden lg:block">
+                            {slides[0].plans.map((plan, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className={`bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-3 text-right transition-all duration-700 ${
+                                        activeSlide === 0 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
+                                    }`}
+                                    style={{
+                                        animation: activeSlide === 0 ? `float ${3 + idx}s ease-in-out infinite` : 'none',
+                                        animationDelay: `${idx * 0.3}s`,
+                                        transitionDelay: `${500 + idx * 100}ms`
+                                    }}
+                                >
+                                    <div className="text-sm font-semibold text-white/70">{plan.name}</div>
+                                    <div className="text-2xl font-bold">{plan.price}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Overlay when not active */}
+                    {activeSlide !== 0 && (
+                        <div className="absolute inset-0 bg-black/20 backdrop-blur-sm cursor-pointer flex items-center justify-center transition-all duration-1000">
+                            <div className="text-white text-6xl font-black opacity-50 transform transition-all duration-700 hover:scale-110">Cuidador</div>
+                        </div>
+                    )}
                 </div>
 
-                {/* FAQ Note */}
-                <div className="text-center">
-                    <p className="text-gray-600 mb-4">
-                        Have questions about our pricing?
-                    </p>
-                    <a 
-                        href="#contact"
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold transition-colors"
-                    >
-                        Contact our sales team
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </a>
-                </div>
+                {/* RIGHT SIDE - FREELANCERS */}
+                <div 
+                    className={`w-1/2 bg-gradient-to-br from-orange-400 to-orange-500 relative transition-all duration-1000 ease-out ${
+                        activeSlide === 1 ? 'flex-1' : 'w-1/2 opacity-50'
+                    }`}
+                    onClick={() => setActiveSlide(1)}
+                >
+                    <div className={`absolute inset-0 flex flex-col justify-center items-start px-12 lg:px-20 text-white transition-all duration-1000 ${
+                        activeSlide === 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
+                    }`}>
+                        {/* Badge */}
+                        <div 
+                            className={`inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6 border border-white/30 transition-all duration-700 delay-100 ${
+                                activeSlide === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                            }`}
+                        >
+                            💼 PARA CUIDADORES
+                        </div>
 
-                {/* Trust Badges */}
-                <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                    <div className="p-4">
-                        <div className="text-3xl mb-2">💳</div>
-                        <div className="text-sm text-gray-600 font-medium">Secure Payment</div>
+                        {/* Title */}
+                        <h1 
+                            className={`text-5xl lg:text-7xl font-black leading-tight mb-4 uppercase transition-all duration-700 delay-200 ${
+                                activeSlide === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                            }`}
+                        >
+                            Crece tu<br />
+                            carrera<br />
+                            profesional
+                        </h1>
+
+                        {/* Description */}
+                        <p 
+                            className={`text-lg lg:text-xl text-white/90 max-w-md mb-8 leading-relaxed transition-all duration-700 delay-300 ${
+                                activeSlide === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                            }`}
+                        >
+                            Accede a más oportunidades, reduce comisiones y destaca como profesional elite en la plataforma.
+                        </p>
+
+                        {/* CTA Button */}
+                        <button 
+                            className={`group inline-flex items-center gap-3 px-8 py-4 bg-white text-orange-600 rounded-full font-bold text-lg hover:bg-orange-50 transition-all duration-700 delay-400 hover:shadow-2xl hover:scale-105 ${
+                                activeSlide === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                            }`}
+                        >
+                            Comenzar ahora
+                            <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                        </button>
+
+                        {/* Decorative Elements */}
+                        <div className="absolute bottom-10 left-12 lg:left-20 flex gap-3">
+                            <div className={`w-12 h-1 rounded-full transition-all ${activeSlide === 0 ? 'bg-white' : 'bg-white/30'}`}></div>
+                            <div className={`w-12 h-1 rounded-full transition-all ${activeSlide === 1 ? 'bg-white' : 'bg-white/30'}`}></div>
+                        </div>
+
+                        {/* Price Tags Floating */}
+                        <div className="absolute top-1/3 right-10 space-y-4 hidden lg:block">
+                            {slides[1].plans.map((plan, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className={`bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-3 text-right transition-all duration-700 ${
+                                        activeSlide === 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
+                                    }`}
+                                    style={{
+                                        animation: activeSlide === 1 ? `float ${3 + idx}s ease-in-out infinite` : 'none',
+                                        animationDelay: `${idx * 0.3}s`,
+                                        transitionDelay: `${500 + idx * 100}ms`
+                                    }}
+                                >
+                                    <div className="text-sm font-semibold text-white/70">{plan.name}</div>
+                                    <div className="text-2xl font-bold">{plan.price}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <div className="p-4">
-                        <div className="text-3xl mb-2">🔒</div>
-                        <div className="text-sm text-gray-600 font-medium">Privacy Protected</div>
-                    </div>
-                    <div className="p-4">
-                        <div className="text-3xl mb-2">🔄</div>
-                        <div className="text-sm text-gray-600 font-medium">Cancel Anytime</div>
-                    </div>
-                    <div className="p-4">
-                        <div className="text-3xl mb-2">✅</div>
-                        <div className="text-sm text-gray-600 font-medium">14-Day Trial</div>
-                    </div>
+
+                    {/* Overlay when not active */}
+                    {activeSlide !== 1 && (
+                        <div className="absolute inset-0 bg-black/20 backdrop-blur-sm cursor-pointer flex items-center justify-center transition-all duration-1000">
+                            <div className="text-white text-6xl font-black opacity-50 transform transition-all duration-700 hover:scale-110">Cliente</div>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Navigation Arrows */}
+            <button 
+                onClick={() => setActiveSlide(0)}
+                className="absolute left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white/40 hover:scale-110 transition-all duration-300 z-10"
+            >
+                <svg className="w-6 h-6 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button 
+                onClick={() => setActiveSlide(1)}
+                className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white/40 hover:scale-110 transition-all duration-300 z-10"
+            >
+                <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            {/* Floating Animation */}
+            <style>{`
+                @keyframes float {
+                    0%, 100% {
+                        transform: translateY(0px);
+                    }
+                    50% {
+                        transform: translateY(-10px);
+                    }
+                }
+            `}</style>
         </section>
     );
 }

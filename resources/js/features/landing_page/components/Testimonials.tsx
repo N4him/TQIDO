@@ -1,136 +1,185 @@
 export default function Testimonials() {
-    const testimonials = [
+    const column1 = [
         {
             id: 1,
-            name: "Sarah Johnson",
-            role: "Marketing Manager",
+            name: "Leslie Alexander",
+            username: "@lesliealexander",
             avatar: "👩‍💼",
-            rating: 5,
-            text: "This platform has completely transformed how I manage my stress. The sessions are short, effective, and fit perfectly into my busy schedule. I feel more balanced than ever!",
-            color: "from-blue-400 to-blue-500"
+            text: "Laborum quis quam. Dolorum et ut quod quia. Voluptas numquam delectus illo. Aut enim doloremque et ipsam.",
         },
         {
             id: 2,
-            name: "Michael Chen",
-            role: "Software Developer",
+            name: "Michael Foster",
+            username: "@michaelfoster",
             avatar: "👨‍💻",
-            rating: 5,
-            text: "As someone who struggles with focus, the clarity sessions have been a game-changer. I'm more productive and feel less overwhelmed during work hours.",
-            color: "from-purple-400 to-purple-500"
+            text: "Quia dolorem qui et. Atque quo aliquid sit eos officia. Dolores similique laboriosam quaerat cupiditate.",
         },
         {
             id: 3,
-            name: "Emily Rodriguez",
-            role: "Teacher",
-            avatar: "👩‍🏫",
-            rating: 5,
-            text: "The relaxation videos help me unwind after long days with students. I love how accessible and easy to use everything is. Highly recommend!",
-            color: "from-pink-400 to-pink-500"
-        },
-        {
-            id: 4,
-            name: "David Park",
-            role: "Entrepreneur",
-            avatar: "👨‍💼",
-            rating: 5,
-            text: "I've tried many wellness apps, but this one stands out. The energy boost sessions give me exactly what I need to power through my day with positivity.",
-            color: "from-orange-400 to-orange-500"
-        },
-        {
-            id: 5,
-            name: "Lisa Thompson",
-            role: "Nurse",
-            avatar: "👩‍⚕️",
-            rating: 5,
-            text: "Working night shifts made sleep difficult until I found these sleep sessions. Now I fall asleep faster and wake up feeling refreshed. Life-changing!",
-            color: "from-indigo-400 to-indigo-500"
-        },
-        {
-            id: 6,
-            name: "James Wilson",
-            role: "Student",
-            avatar: "👨‍🎓",
-            rating: 5,
-            text: "Perfect for managing exam stress! The sessions are quick, effective, and actually work. My grades have improved because I'm calmer and more focused.",
-            color: "from-green-400 to-green-500"
+            name: "Dries Vincent",
+            username: "@driesvincent",
+            avatar: "🧑‍💼",
+            text: "Consequatur ut atque. Itaque nostrum molestiae id veniam eos cumque. Ut quia eum fugit laborum autem inventore ut voluptate.",
         }
     ];
 
+    const column2 = [
+        {
+            id: 4,
+            name: "Brenna Goyette",
+            username: "@brennagoyette",
+            avatar: "👩‍🎨",
+            text: "Integer id nunc sit semper purus. Bibendum at lacus ut arcu blandit montes vitae auctor libero. Hac condimentum dignissim nibh vulputate ut nunc. Amet nibh orci mi venenatis blandit vel et proin. Non hendrerit in vel ac diam.",
+        },
+        {
+            id: 5,
+            name: "Lindsay Walton",
+            username: "@lindsaywalton",
+            avatar: "👩‍💻",
+            text: "Aut reprehenderit voluptatem eum asperiores beatae id. Iure molestiae ipsam ut officia rem nulla blanditiis.",
+            logo: "SavvyCal"
+        },
+        {
+            id: 6,
+            name: "Tom Cook",
+            username: "@tomcook",
+            avatar: "👨‍🍳",
+            text: "Voluptas quos itaque ipsum in voluptatem est. Iste eos blanditiis repudiandae. Earum deserunt enim molestiae ipsum perferendis recusandae saepe corrupti.",
+        },
+
+    ];
+
+    const column3 = [
+        {
+            id: 9,
+            name: "Leonard Krasner",
+            username: "@leonardkrasner",
+            avatar: "🧑‍💼",
+            text: "Molestias ea earum quos nostrum doloremque sed. Quaerat quasi aut velit tincidunt excepturi rerum voluptatem minus harum.",
+        },
+        {
+            id: 10,
+            name: "Floyd Miles",
+            username: "@floydmiles",
+            avatar: "👨‍🔧",
+            text: "Architecto libero natus est. Est quam debitis officia enim atque et ut non. Sunt reiciendis quasi eaque. Itaque error ut et.",
+        },
+        {
+            id: 11,
+            name: "Emily Selman",
+            username: "@emilyselman",
+            avatar: "👩‍🏫",
+            text: "Temporibus ea molestiae impedit adipisci perspiciatis illo aliquid. Quis ut ratione et voluptatem et. Nostrum explicabo iste unda beatae.",
+        }
+    ];
+
+    const TestimonialCard = ({ testimonial }: { testimonial: {
+        id: number;
+        name: string;
+        username: string;
+        avatar: string;
+        text: string;
+        featured?: boolean;
+        logo?: string;
+        highlight?: boolean;
+    }}) => (
+        <div 
+            className={`
+                bg-white/5 backdrop-blur-sm rounded-2xl p-6 
+                border transition-all duration-300
+                ${testimonial.highlight 
+                    ? 'border-blue-400/50 shadow-lg shadow-blue-400/20' 
+                    : 'border-white/10 hover:border-white/20'
+                }
+            `}
+        >
+            <p className="text-white/80 mb-6 leading-relaxed text-sm">
+                "{testimonial.text}"
+            </p>
+
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-lg">
+                        {testimonial.avatar}
+                    </div>
+
+                    <div>
+                        <div className="font-semibold text-white text-sm">
+                            {testimonial.name}
+                        </div>
+                        <div className="text-xs text-white/70">
+                            {testimonial.username}
+                        </div>
+                    </div>
+                </div>
+
+                {testimonial.logo && (
+                    <div className="bg-white rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                        <span className="text-xs font-semibold text-gray-900">{testimonial.logo}</span>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
     return (
-        <section id="testimonials" className="py-20 bg-gradient-to-br from-orange-50 to-pink-50">
+        <section id="testimonials" className="py-20 bg-foreground overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <div className="inline-block px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold mb-4">
-                        Testimonials
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                        What our users say
+
+                    <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
+                        We have worked with<br />thousands of amazing people
                     </h2>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                        Join thousands of happy users who have transformed their emotional wellbeing
-                    </p>
                 </div>
 
-                {/* Testimonials Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {testimonials.map((testimonial) => (
-                        <div 
-                            key={testimonial.id}
-                            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
-                        >
-                            {/* Stars Rating */}
-                            <div className="flex gap-1 mb-4">
-                                {[...Array(testimonial.rating)].map((_, index) => (
-                                    <svg 
-                                        key={index}
-                                        className="w-5 h-5 text-yellow-400 fill-current"
-                                        viewBox="0 0 20 20"
-                                    >
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                ))}
-                            </div>
+                {/* Testimonials Grid - Masonry Layout */}
+                <div className="hidden lg:grid lg:grid-cols-3 gap-6">
+                    {/* Column 1 */}
+                    <div className="space-y-6">
+                        {column1.map((testimonial) => (
+                            <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+                        ))}
+                    </div>
 
-                            {/* Quote */}
-                            <p className="text-gray-700 mb-6 leading-relaxed italic">
-                                "{testimonial.text}"
-                            </p>
+                    {/* Column 2 */}
+                    <div className="space-y-6">
+                        {column2.map((testimonial) => (
+                            <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+                        ))}
+                    </div>
 
-                            {/* User Info */}
-                            <div className="flex items-center gap-4">
-                                {/* Avatar */}
-                                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform`}>
-                                    {testimonial.avatar}
-                                </div>
+                    {/* Column 3 */}
+                    <div className="space-y-6">
+                        {column3.map((testimonial) => (
+                            <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+                        ))}
+                    </div>
+                </div>
 
-                                {/* Name & Role */}
-                                <div>
-                                    <div className="font-bold text-gray-900">
-                                        {testimonial.name}
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                        {testimonial.role}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                {/* Mobile/Tablet - Single column */}
+                <div className="lg:hidden space-y-6">
+                    {[...column1, ...column2, ...column3].map((testimonial) => (
+                        <TestimonialCard key={testimonial.id} testimonial={testimonial} />
                     ))}
                 </div>
 
                 {/* Social Proof Stats */}
-                <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                     <div className="p-6">
-                        <div className="text-5xl font-bold text-blue-600 mb-2">4.9/5</div>
-                        <div className="text-gray-600">Average Rating</div>
+                        <div className="text-5xl font-bold text-blue-400 mb-2">4.9/5</div>
+                        <div className="text-white/70">Average Rating</div>
                     </div>
                     <div className="p-6">
-                        <div className="text-5xl font-bold text-pink-600 mb-2">1,200+</div>
-                        <div className="text-gray-600">Happy Customers</div>
+                        <div className="text-5xl font-bold text-purple-400 mb-2">1,200+</div>
+                        <div className="text-white/70">Happy Customers</div>
                     </div>
                     <div className="p-6">
-                        <div className="text-5xl font-bold text-orange-600 mb-2">98%</div>
-                        <div className="text-gray-600">Would Recommend</div>
+                        <div className="text-5xl font-bold text-blue-400 mb-2">98%</div>
+                        <div className="text-white/70">Would Recommend</div>
                     </div>
                 </div>
 
@@ -138,7 +187,7 @@ export default function Testimonials() {
                 <div className="text-center mt-12">
                     <a 
                         href="#pricing"
-                        className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all hover:shadow-lg"
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-white text-foreground rounded-full font-semibold hover:bg-blue-400 hover:text-white transition-all hover:shadow-lg hover:shadow-blue-400/50"
                     >
                         Join Our Community
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
