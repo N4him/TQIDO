@@ -223,7 +223,7 @@ export default function ModernProfileSections() {
           const IconComponent = section.icon;
 
           return (
-            <section key={section.id} className="float-in" style={{ animationDelay: `${sectionIdx * 0.2}s` }}>
+            <section id="services"  key={section.id} className="float-in" style={{ animationDelay: `${sectionIdx * 0.2}s` }}>
               {/* Section Header */}
 <div className="mb-12">
                 <div 

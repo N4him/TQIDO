@@ -80,7 +80,8 @@ export default function Hero() {
             <style >{`
                 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
             `}</style>
-            
+                        <div id="hero" className="min-h-screen flex items-center justify-center bg-background" style={{ fontFamily: 'Roboto, sans-serif' }}>
+
             <div className="min-h-screen flex items-center justify-center bg-background" style={{ fontFamily: 'Roboto, sans-serif' }}>
                 <div className="max-w-7xl mx-auto w-full py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16 md:gap-20 lg:gap-32 xl:gap-40 items-center">
@@ -108,7 +109,7 @@ export default function Hero() {
                         </div>
 
                         {/* Galería con efecto FanOut - Desktop y Tablet Landscape */}
-                        <div className="hidden lg:block relative flex items-center justify-center pl-8 lg:pl-12 xl:pl-16" style={{ height: '450px', perspective: '1200px' }}>
+                        <div className="hidden lg:block relative items-center justify-center pl-8 lg:pl-12 xl:pl-16" style={{ height: '450px', perspective: '1200px' }}>
                             <div className="relative" style={{ width: '100%', height: '100%' }}>
                                 {galleryItems.map((item, index) => {
                                     const isHovered = hoveredIndex === index;
@@ -268,6 +269,7 @@ export default function Hero() {
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </>
     );

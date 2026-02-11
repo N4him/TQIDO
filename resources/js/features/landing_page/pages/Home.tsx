@@ -1,3 +1,4 @@
+// resources/js/features/landing_page/pages/Home.tsx
 import { Head } from '@inertiajs/react';
 import LandingLayout from '../layouts/LandingLayout';
 import Hero from '../components/Hero';
@@ -18,39 +19,14 @@ export default function Home({ canRegister = true }: HomeProps) {
     return (
         <LandingLayout>
             <Head title="TQido" />
-            
-            <div id="hero">
-                <Hero />
-            </div>
-            
-            <div id="features">
-                <Features />
-            </div>
-            
-            <div id="about">
-                <About />
-            </div>
-            
-            <div id="services">
-                <Services />
-            </div>
-            
-            <div id="testimonials">
-                <Testimonials />
-            </div>
-            
-            <div id="pricing">
-                <Pricing />
-            </div>
-            
-            <div id="cta">
-                <CTA />
-            </div>
-            
-            <div id="contact">
-                <Contact />
-            </div>
-            
+            <Hero />
+            <Features />
+            <About />
+            <Services />
+            <Testimonials />
+            <Pricing />
+            <CTA />
+            <Contact />
             <Footer />
         </LandingLayout>
     );

@@ -37,7 +37,7 @@ export default function Pricing() {
     const currentSlide = slides[activeSlide];
 
     return (
-        <section className="relative h-screen w-full overflow-hidden">
+        <section  id="pricing"  className="relative h-screen w-full overflow-hidden">
             {/* Split Screen Container */}
             <div className="absolute inset-0 flex">
                 {/* LEFT SIDE - CLIENTES */}

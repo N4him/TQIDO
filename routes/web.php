@@ -6,7 +6,7 @@ use Laravel\Fortify\Features;
 
 // ✅ Landing page pública - Ruta principal
 Route::get('/', function () {
-    return Inertia::render('index', [
+    return Inertia::render('landing_page/Home', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
@@ -15,8 +15,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         // TODO: Crear dashboard real cuando sea necesario
-        // Por ahora redirige a la landing
-        return Inertia::render('index', [
+        return Inertia::render('landing_page/Home', [
             'canRegister' => Features::enabled(Features::registration()),
         ]);
     })->name('dashboard');
