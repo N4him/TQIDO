@@ -75,13 +75,11 @@
     --primary: #a4b8e8; /* azul suave */
     --primary-foreground: #ffffff;
 
-    --secondary: #90be6d; /* verde */
     --secondary-foreground: #1d3557;
 
     --muted: #f0f4fa;
     --muted-foreground: #1d3557;
 
-    --accent: #90be6d;
     --accent-foreground: #ffffff;
 
     --border: #dce3f3;

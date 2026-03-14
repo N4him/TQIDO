@@ -1,276 +1,422 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from "react";
 
-interface GalleryItem {
-    id: number;
-    image: string;
-    title: string;
-    courses: string;
-}
+const galleryItems = [
+  {
+    id: 1,
+    image: "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=800&q=80",
+    title: "Personas mayores",
+    count: "75+",
+  },
+  {
+    id: 2,
+    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&q=80",
+    title: "Niños",
+    count: "100+",
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80",
+    title: "Mascotas",
+    count: "50+",
+  },
+];
 
 export default function Hero() {
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const [clickedIndex, setClickedIndex] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [clicked, setClicked] = useState<number | null>(null);
+  const [showSticky, setShowSticky] = useState(false);
+  const [activeCard, setActiveCard] = useState(1);
+  const [prevActiveCard, setPrevActiveCard] = useState<number | null>(null);
 
-    const galleryItems: GalleryItem[] = [
-        {
-            id: 1,
-            image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800",
-            title: "Mascotas",
-            courses: "50+",
-        },
-        {
-            id: 2,
-            image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800",
-            title: "Niños",
-            courses: "100+",
-        },
-        {
-            id: 3,
-            image: "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=800",
-            title: "Personas mayores",
-            courses: "75+",
-        },
-    ];
+  useEffect(() => {
+    const onScroll = () => setShowSticky(window.scrollY > 320);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    const totalCards = galleryItems.length;
-    const centerIndex = Math.floor(totalCards / 2);
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (hovered === null) {
+        setActiveCard(p => {
+          const next = (p + 1) % 3;
+          setPrevActiveCard(p);
+          setTimeout(() => setPrevActiveCard(null), 650);
+          return next;
+        });
+      }
+    }, 4500);
+    return () => clearInterval(t);
+  }, [hovered]);
 
-    const getCardStyle = (index: number) => {
-        const offset = index - centerIndex;
-        const isHovered = hoveredIndex === index;
-        
-        // Efecto abanico con más separación
-        const angle = offset * 15;
-        const translateX = offset * 140;
-        
-        // Z-index: la card del centro siempre tiene el más alto
-        let zIndex = 10 + index;
-        if (index === centerIndex) {
-            zIndex = 15;
-        }
-        if (isHovered) {
-            zIndex = 20;
-        }
-        
-        if (isHovered) {
-            return {
-                transform: `translateX(${translateX}px) rotate(${angle}deg) scale(1.08)`,
-                width: '350px',
-                zIndex: zIndex,
-            };
-        }
-        
-        if (hoveredIndex !== null) {
-            return {
-                transform: `translateX(${translateX}px) rotate(${angle}deg) scale(0.96)`,
-                width: '350px',
-                zIndex: zIndex,
-            };
-        }
-        
-        return {
-            transform: `translateX(${translateX}px) rotate(${angle}deg)`,
-            width: '350px',
-            zIndex: zIndex,
-        };
+  const center = 1;
+
+  const getCardStyle = (i: number) => {
+    const offset = i - center;
+    const angle = offset * 14;
+    const tx = offset * 185;
+    const isActive = hovered === i || (hovered === null && activeCard === i);
+    const scale = isActive ? 1.07 : hovered !== null ? 0.93 : 1;
+
+    // Jerarquía fija por posición en el abanico:
+    //   centro (i=1) siempre encima de laterales → z base 20
+    //   card activa → z 30 (siempre gana)
+    //   prevActiveCard lateral → z 14 (debajo del centro, encima del otro lateral)
+    //   laterales en reposo → 10 / 11
+    let zIndex: number;
+    if (isActive) {
+      zIndex = 30;
+    } else if (i === center) {
+      // Centro siempre por encima de las laterales inactivas
+      zIndex = 20;
+    } else if (i === prevActiveCard) {
+      // La lateral que acaba de perder foco: sube un poco, pero
+      // NUNCA por encima del centro (20) para evitar el overlap visual
+      zIndex = 14;
+    } else {
+      zIndex = i === 0 ? 10 : 11;
+    }
+
+    return {
+      transform: `translateX(${tx}px) rotate(${angle}deg) scale(${scale})`,
+      zIndex,
     };
+  };
 
-    return (
-        <>
-            <style >{`
-                @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
-            `}</style>
-                        <div id="hero" className="min-h-screen flex items-center justify-center bg-background" style={{ fontFamily: 'Roboto, sans-serif' }}>
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-            <div className="min-h-screen flex items-center justify-center bg-background" style={{ fontFamily: 'Roboto, sans-serif' }}>
-                <div className="max-w-7xl mx-auto w-full py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16 md:gap-20 lg:gap-32 xl:gap-40 items-center">
-                        
-                        {/* Contenido del texto - Responsive - Movido más a la izquierda */}
-                        <div className="text-left px-2 sm:px-0 lg:-ml-8 xl:-ml-15">
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 sm:mb-5 md:mb-6 leading-tight">
-                                Somos expertos <br />
-                                <span className="text-white">
-                                    en el cuidado de tus seres amados
-                                </span>
-                            </h1>
+        /* ── PALETA BASE #2e6fba ──────────────────────────────────────
+           base:      #2e6fba  (azul medio-profundo)
+           oscuro:    #1a4a8a  (sombras, card overlay)
+           muy oscuro:#0e2d5a  (profundidad máxima)
+           claro:     #5a96d4  (blob highlight)
+           muy claro: #a4c8ee  (blob suave)
+           texto:     #ffffff  (blanco puro sobre base)
+           texto2:    rgba(255,255,255,0.7)
+        ──────────────────────────────────────────────────────────────── */
 
-                            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 md:mb-10 max-w-2xl leading-relaxed">
-                                Descubre todos los servicios que tenemos para cada uno
-                                de tus seres queridos 
-                            </p>
+        .hero-root {
+          min-height: 100svh;
+          display: flex;
+          align-items: center;
+          background: #2e6fba;
+          position: relative;
+          overflow: hidden;
+          font-family: 'DM Sans', sans-serif;
+          padding-top: 20px;
+        }
 
-                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
-                                <button className="group px-6 sm:px-8 py-3 sm:py-4 bg-foreground text-white rounded-full font-semibold hover:bg-[#21456b] transition-colors duration-300 hover:shadow-2xl inline-flex items-center justify-center gap-2 text-sm sm:text-base">
-                                    Ver vídeo
-                                </button>
-                                
-                            </div>
-                        </div>
+        .hero-ambient { display: none; }
 
-                        {/* Galería con efecto FanOut - Desktop y Tablet Landscape */}
-                        <div className="hidden lg:block relative items-center justify-center pl-8 lg:pl-12 xl:pl-16" style={{ height: '450px', perspective: '1200px' }}>
-                            <div className="relative" style={{ width: '100%', height: '100%' }}>
-                                {galleryItems.map((item, index) => {
-                                    const isHovered = hoveredIndex === index;
-                                    const cardStyle = getCardStyle(index);
-                                    
-                                    return (
-                                        <div
-                                            key={item.id}
-                                            className="absolute top-1/2 left-1/2 rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl"
-                                            style={{
-                                                height: '600px',
-                                                marginLeft: '-150px',
-                                                marginTop: '-350px',
-                                                transformOrigin: 'center bottom',
-                                                transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                                pointerEvents: 'none',
-                                                willChange: 'transform',
-                                                ...cardStyle,
-                                            }}
-                                        >
-                                            <div 
-                                                className="absolute inset-0 cursor-pointer"
-                                                style={{ 
-                                                    pointerEvents: 'auto',
-                                                    padding: '20px',
-                                                    margin: '-20px'
-                                                }}
-                                                onMouseEnter={() => setHoveredIndex(index)}
-                                                onMouseLeave={() => setHoveredIndex(null)}
-                                            />
-                                            
-                                            <div 
-                                                className="absolute inset-0"
-                                                style={{
-                                                    transform: isHovered ? 'scale(1.1)' : 'scale(1)',
-                                                    transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                                    willChange: 'transform',
-                                                }}
-                                            >
-                                                <img 
-                                                    src={item.image} 
-                                                    alt={item.title}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
+        .hero-grain {
+          position: absolute; inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+          pointer-events: none; opacity: 0.5;
+        }
+        .hero-dots {
+          position: absolute; inset: 0;
+          background-image: radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px);
+          background-size: 40px 40px;
+          pointer-events: none;
+          mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
+        }
 
-                                            <div 
-                                                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
-                                                style={{
-                                                    opacity: isHovered ? 0.9 : 0.7,
-                                                    transition: 'opacity 0.4s ease-out',
-                                                }}
-                                            />
+        .hero-inner {
+          max-width: 1400px; margin: 0 auto; width: 100%;
+          padding: 16px 48px 60px;
+          display: grid;
+          grid-template-columns: 1fr 1.3fr;
+          gap: 160px;
+          align-items: center;
+          position: relative; z-index: 1;
+        }
 
-                                            <div className="relative h-full flex flex-col justify-end p-6 lg:p-8">
-                                                <div className="text-white text-center"
-                                                    style={{
-                                                        transform: isHovered ? 'translateY(0)' : 'translateY(10px)',
-                                                        opacity: isHovered ? 1 : 0.95,
-                                                        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                                    }}
-                                                >
-                                                    <h3 className="text-3xl lg:text-4xl font-bold mb-2 lg:mb-3">{item.title}</h3>
-                                                    <p className="text-2xl lg:text-3xl font-bold text-white/90">{item.courses}</p>
-                                                    <p className="text-xs lg:text-sm opacity-80 mt-1 lg:mt-2">servicios disponibles</p>
-                                                    
-                                                    <div
-                                                        style={{
-                                                            opacity: isHovered ? 1 : 0,
-                                                            transform: isHovered ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.95)',
-                                                            transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                                                        }}
-                                                    >
-                                                        {isHovered && (
-                                                            <button className="mt-4 lg:mt-6 px-5 lg:px-6 py-2 lg:py-3 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 text-sm lg:text-base">
-                                                                Explorar →
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
+        .hero-copy { display: flex; flex-direction: column; }
 
-                        {/* Vista móvil y tablets portrait - Grid responsive */}
-                        <div className="lg:hidden grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 px-2 sm:px-0">
-                            {galleryItems.map((item, index) => {
-                                const isClicked = clickedIndex === index;
-                                
-                                return (
-                                    <div
-                                        key={item.id}
-                                        className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl h-64 sm:h-72 md:h-80 cursor-pointer"
-                                        onClick={() => setClickedIndex(isClicked ? null : index)}
-                                    >
-                                        <div 
-                                            className="absolute inset-0"
-                                            style={{
-                                                transform: isClicked ? 'scale(1.1)' : 'scale(1)',
-                                                transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                            }}
-                                        >
-                                            <img 
-                                                src={item.image} 
-                                                alt={item.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
+        .hero-h1 {
+          font-family: 'DM Serif Display', serif;
+          font-size: clamp(44px, 5.5vw, 76px);
+          line-height: 1.0; color: #ffffff; margin: 0 0 24px; letter-spacing: -0.5px;
+        }
+        .hero-h1 em { font-style: italic; color: #a4c8ee; }
 
-                                        <div 
-                                            className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
-                                            style={{
-                                                opacity: isClicked ? 0.9 : 0.7,
-                                                transition: 'opacity 0.4s ease-out',
-                                            }}
-                                        />
+        .hero-p {
+          font-size: 17px; line-height: 1.75;
+          color: rgba(255,255,255,0.75); margin: 0 0 40px;
+          max-width: 440px; font-weight: 300;
+        }
 
-                                        <div className="relative h-full flex flex-col justify-end p-4 sm:p-5 md:p-6">
-                                            <div 
-                                                className="text-white text-center"
-                                                style={{
-                                                    transform: isClicked ? 'translateY(0)' : 'translateY(10px)',
-                                                    opacity: isClicked ? 1 : 0.95,
-                                                    transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                                }}
-                                            >
-                                                <h3 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{item.title}</h3>
-                                                <p className="text-xl sm:text-2xl font-bold text-white/90">{item.courses}</p>
-                                                <p className="text-xs sm:text-sm opacity-80 mt-1">servicios disponibles</p>
-                                                
-                                                <div
-                                                    style={{
-                                                        opacity: isClicked ? 1 : 0,
-                                                        transform: isClicked ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.95)',
-                                                        transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                                                    }}
-                                                >
-                                                    {isClicked && (
-                                                        <button 
-                                                            className="mt-3 sm:mt-4 px-5 sm:px-6 py-2 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 text-sm sm:text-base"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                            }}
-                                                        >
-                                                            Explorar →
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+        .hero-ctas { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
+
+        .hero-btn-primary {
+          display: inline-flex; align-items: center; gap: 9px;
+          padding: 15px 30px; background: #ffffff; color: #2e6fba;
+          border: none; border-radius: 14px; font-size: 15px; font-weight: 700;
+          cursor: pointer; font-family: 'DM Sans', sans-serif;
+          transition: transform 0.25s cubic-bezier(.22,.68,0,1.2), box-shadow 0.25s ease;
+          box-shadow: none; white-space: nowrap;
+        }
+        .hero-btn-primary:hover { transform: translateY(-3px); }
+
+        .hero-btn-secondary {
+          display: inline-flex; align-items: center; gap: 9px;
+          padding: 15px 26px; background: rgba(255,255,255,0.12);
+          color: #ffffff; border: 1px solid rgba(255,255,255,0.35);
+          border-radius: 14px; font-size: 15px; font-weight: 500; cursor: pointer;
+          font-family: 'DM Sans', sans-serif; white-space: nowrap; backdrop-filter: blur(8px);
+          transition: background 0.2s, border-color 0.2s;
+        }
+        .hero-btn-secondary:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.6); }
+
+        .play-ring {
+          width: 22px; height: 22px; border-radius: 50%;
+          border: 1.5px solid rgba(255,255,255,0.5);
+          display: flex; align-items: center; justify-content: center; font-size: 9px;
+        }
+
+        .hero-social { display: flex; align-items: center; gap: 14px; }
+        .hero-av-stack { display: flex; }
+        .hero-av {
+          width: 36px; height: 36px; border-radius: 50%;
+          border: 2.5px solid #2e6fba; background: #1a4a8a;
+          margin-left: -10px; overflow: hidden;
+          display: flex; align-items: center; justify-content: center; font-size: 15px;
+        }
+        .hero-av:first-child { margin-left: 0; }
+        .hero-social-text { display: flex; flex-direction: column; gap: 1px; }
+        .hero-stars { color: #fbbf24; font-size: 11px; letter-spacing: 1px; }
+        .hero-social-label { font-size: 13px; color: rgba(255,255,255,0.7); }
+        .hero-social-label strong { color: #ffffff; font-weight: 700; }
+
+        .hero-fan {
+          position: relative;
+          height: 660px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .hero-card {
+          position: absolute;
+          width: 340px;
+          height: 500px;
+          cursor: pointer;
+          will-change: transform;
+          transition: transform 0.55s cubic-bezier(.22,.68,0,1.2);
+
+        }
+
+        .hero-card-inner {
+          width: 100%;
+          height: 100%;
+          border-radius: 24px;
+          overflow: hidden;
+          position: relative;
+          isolation: isolate;
+        }
+
+        .hero-card-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .hero-card-overlay { display: none; }
+
+        .hero-card-info {
+          position: absolute; bottom: 0; left: 0; right: 0;
+          padding: 34px 30px;
+        }
+        .hero-card-count {
+          font-size: 46px; font-weight: 700; color: #fff;
+          font-family: 'DM Serif Display', serif; line-height: 1; margin-bottom: 6px;
+        }
+        .hero-card-title {
+          font-size: 16px; font-weight: 500;
+          color: rgba(255,255,255,0.7); margin-bottom: 18px; letter-spacing: 0.02em;
+        }
+        .hero-card-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 10px 20px;
+          background: rgba(255,255,255,0.15);
+          border: 1px solid rgba(255,255,255,0.3);
+          border-radius: 100px; color: #fff;
+          font-size: 14px; font-weight: 600; cursor: pointer;
+          backdrop-filter: blur(8px);
+          font-family: 'DM Sans', sans-serif;
+          opacity: 0;
+          transform: translateY(8px);
+          transition: opacity 0.35s cubic-bezier(.22,.68,0,1.2),
+                      transform 0.35s cubic-bezier(.22,.68,0,1.2),
+                      background 0.2s;
+        }
+        .hero-card:hover .hero-card-btn,
+        .hero-card.active-auto .hero-card-btn {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .hero-card-btn:hover { background: rgba(255,255,255,0.28); }
+
+        .hero-fan-dots {
+          position: absolute; bottom: -28px; left: 50%;
+          transform: translateX(-50%);
+          display: flex; gap: 6px; z-index: 50;
+        }
+        .hero-fan-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: rgba(255,255,255,0.3);
+          transition: all 0.3s ease;
+          cursor: pointer; border: none; padding: 0;
+        }
+        .hero-fan-dot.active { background: #ffffff; width: 20px; border-radius: 3px; }
+
+        .hero-mobile-cards {
+          display: none;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px; margin-top: 36px;
+        }
+        .hero-mobile-card {
+          border-radius: 16px; overflow: hidden;
+          height: 220px;
+          position: relative; cursor: pointer;
+        }
+        .hero-mobile-card img { width: 100%; height: 100%; object-fit: cover; }
+        .hero-mobile-card-overlay { display: none; }
+        .hero-mobile-card-info {
+          position: absolute; bottom: 0; left: 0; right: 0;
+          padding: 16px 14px; text-align: center;
+        }
+        .hero-mobile-card-count {
+          font-size: 24px; font-weight: 700; color: #fff;
+          font-family: 'DM Serif Display', serif; line-height: 1;
+        }
+        .hero-mobile-card-title { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 3px; }
+
+        .hero-sticky {
+          position: fixed; bottom: 24px; left: 50%;
+          transform: translateX(-50%) translateY(100px);
+          z-index: 999; opacity: 0;
+          transition: transform 0.4s cubic-bezier(.22,.68,0,1.2), opacity 0.3s ease;
+          pointer-events: none;
+        }
+        .hero-sticky.visible { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+        .hero-sticky-btn {
+          display: flex; align-items: center; gap: 10px;
+          padding: 14px 28px; background: #1a4a8a;
+          border: 1px solid rgba(164,200,238,0.35); color: #fff;
+          border-radius: 100px; font-size: 14px; font-weight: 600;
+          cursor: pointer; box-shadow: none;
+          font-family: 'DM Sans', sans-serif; backdrop-filter: blur(12px); white-space: nowrap;
+        }
+
+        @media (max-width: 1024px) {
+          .hero-inner { grid-template-columns: 1fr; gap: 0; padding: 40px 24px 48px; }
+          .hero-fan { display: none; }
+          .hero-mobile-cards { display: grid; }
+          .hero-h1 { font-size: clamp(36px, 8vw, 56px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-card, .hero-btn-primary, .hero-btn-secondary { transition: none; }
+        }
+      `}</style>
+
+
+
+      <section className="hero-root" id="hero">
+        <div className="hero-ambient">
+          <div className="hero-ambient-blob hero-amb-1" />
+          <div className="hero-ambient-blob hero-amb-2" />
+          <div className="hero-ambient-blob hero-amb-3" />
+        </div>
+        <div className="hero-grain" />
+        <div className="hero-dots" />
+
+        <div className="hero-inner">
+          {/* Left */}
+          <div className="hero-copy">
+            <h1 className="hero-h1">
+              Somos expertos<br />
+              en el cuidado de tus <em>seres amados</em><br />
+            </h1>
+            <p className="hero-p">
+              Conectamos familias con cuidadores profesionales, verificados
+              y empáticos — para personas mayores, niños y mascotas. Todo 100% digital.
+            </p>
+            <div className="hero-ctas">
+              <button className="hero-btn-primary">🔍 Buscar cuidador</button>
+              <button className="hero-btn-secondary">
+                <span className="play-ring">▶</span>
+                Ver cómo funciona
+              </button>
+            </div>
+            <div className="hero-social">
+              <div className="hero-av-stack">
+                {["👩", "👨", "👩‍⚕️", "🧑"].map((em, i) => (
+                  <div className="hero-av" key={i}>{em}</div>
+                ))}
+              </div>
+              <div className="hero-social-text">
+                <div className="hero-stars">★★★★★</div>
+                <div className="hero-social-label">
+                  <strong>+12.000 familias</strong> confían en TQido
                 </div>
+              </div>
             </div>
+            <div className="hero-mobile-cards">
+              {galleryItems.map((item, i) => (
+                <div
+                  key={item.id}
+                  className={`hero-mobile-card ${clicked === i ? "tapped" : ""}`}
+                  onClick={() => setClicked(p => p === i ? null : i)}
+                >
+                  <img src={item.image} alt={item.title} />
+                  <div className="hero-mobile-card-overlay" />
+                  <div className="hero-mobile-card-info">
+                    <div className="hero-mobile-card-count">{item.count}</div>
+                    <div className="hero-mobile-card-title">{item.title}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-        </>
-    );
+          </div>
+
+          {/* Right fan */}
+          <div className="hero-fan">
+            {galleryItems.map((item, i) => (
+              <div
+                key={item.id}
+                className={`hero-card ${hovered === null && activeCard === i ? "active-auto" : ""}`}
+                style={getCardStyle(i)}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div className="hero-card-inner">
+                  <img src={item.image} alt={item.title} className="hero-card-img" />
+                  <div className="hero-card-overlay" />
+                  <div className="hero-card-info">
+                    <div className="hero-card-count">{item.count}</div>
+                    <div className="hero-card-title">servicios — {item.title}</div>
+                    <button className="hero-card-btn">Explorar →</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div className="hero-fan-dots">
+              {galleryItems.map((_, i) => (
+                <button
+                  key={i}
+                  className={`hero-fan-dot ${activeCard === i ? "active" : ""}`}
+                  onClick={() => setActiveCard(i)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
 }

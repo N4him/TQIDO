@@ -7,199 +7,339 @@ export default function LandingLayout({ children }: PropsWithChildren) {
     const [isScrolled, setIsScrolled] = useState(false);
 
     const navLinks = [
-        { href: '#features', label: 'Conoce más' },
-        { href: '#services', label: 'Servicios' },
-        { href: '#testimonials', label: 'Testimonios' },
-        { href: '#pricing', label: 'Precios' },
-        { href: '#contact', label: 'Contacto' },
+        { href: '#about',        label: 'Nosotros'        },
+        { href: '#features',     label: 'Características'  },
+        { href: '#services',     label: 'Servicios'        },
+        { href: '#testimonials', label: 'Testimonios'      },
+        { href: '#faqs',         label: 'FAQ'              },
+        { href: '#pricing',      label: 'Precios'          },
     ];
 
     useEffect(() => {
-        const handleScroll = () => {
-            // Detectar si el usuario ha hecho scroll más de 50px
-            if (window.scrollY > 50) {
-                setIsScrolled(true);
-            } else {
-                setIsScrolled(false);
-            }
-        };
-
+        const handleScroll = () => setIsScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
-
-        // Cleanup
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
+        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const handleNavClick = () => {
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        e.preventDefault();
         setMobileMenuOpen(false);
+        const targetId = href.substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+            const navbarHeight = 80;
+            const offsetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+            const startPosition = window.pageYOffset;
+            const distance = offsetPosition - startPosition;
+            const duration = 1200;
+            let startTime: number | null = null;
+            const animation = (currentTime: number) => {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+                const ease = (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+                window.scrollTo(0, startPosition + distance * ease(progress));
+                if (timeElapsed < duration) requestAnimationFrame(animation);
+            };
+            requestAnimationFrame(animation);
+        }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-orange-50 font-roboto">
-            {/* Navbar */}
-            <nav className="fixed top-0 left-0 right-0 bg-background border-gray-200 z-50 transition-all duration-300">
-                <div className="w-full px-8 sm:px-12 lg:px-16 xl:px-24">
-                    <div className="relative flex items-center justify-center h-16 sm:h-20">
+        <div className="min-h-screen">
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
-                        {/* Logo - Posición absoluta izquierda */}
-                        <div className="absolute left-0 pl-20 lg:pl-40 xl:pl-48">
-                            <Link
-                                href="/"
-                                className="flex-shrink-0 text-2xl font-bold text-gray-900 hover:text-gray-700 transition"
-                            >
-                                <img
-                                    src="/assets/logo.png"
-                                    alt="TQido Logo"
-                                    className="h-30 sm:h-16 md:h-20 lg:h-30 w-auto"
-                                />
-                            </Link>
-                        </div>
+                * { box-sizing: border-box; }
+                html { scroll-behavior: smooth; }
 
-                        {/* Navigation Links - Desktop - Centrado absoluto */}
-                        <div className={`hidden lg:flex items-center gap-8 xl:gap-10 transition-all duration-300 ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                            }`}>
-                            {navLinks.map((link) => (
-                                <a
-                                    key={link.href}
-                                    href={link.href}
-                                    className="text-white hover:text-gray-300 transition font-medium text-sm xl:text-base"
-                                >
-                                    {link.label}
-                                </a>
-                            ))}
-                        </div>
+                /* ─────────────────────────────────────────
+                   NAVBAR SHELL
+                ───────────────────────────────────────── */
+                .navbar {
+                    position: fixed;
+                    top: 0; left: 0; right: 0;
+                    z-index: 100;
+                    transition: background 0.45s ease, box-shadow 0.45s ease, border-color 0.45s ease;
+                    font-family: 'Plus Jakarta Sans', sans-serif;
+                }
 
-                        {/* Auth Buttons - Desktop & Tablet - Posición absoluta derecha */}
-                        <div className="absolute right-0 hidden md:flex items-center gap-3 lg:gap-4 pr-8 lg:pr-16 xl:pr-24">
-                            {auth?.user ? (
-                                <>
-                                    <span className={`hidden lg:inline text-sm text-white transition-all duration-300 ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                                        }`}>
-                                        Hola, {auth.user.name}!
-                                    </span>
-                                    <Link
-                                        href="/settings/profile"
-                                        className={`text-white hover:text-gray-300 font-medium transition-all duration-300 text-sm lg:text-base ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                                            }`}
-                                    >
-                                        Configuración
-                                    </Link>
-                                </>
-                            ) : (
-                                <>
-                                    <Link
-                                        href="/login"
-                                        className={`
-        inline-flex items-center gap-2 px-4 lg:px-5 py-2
-        bg-white/25 backdrop-blur-sl border border-white/50
-        text-white text-sm lg:text-base font-medium rounded-full
-        hover:bg-[#21456b] transition-all duration-300
-        ${isScrolled ? 'opacity-0 pointer-events-none' : ''}
-    `.trim().replace(/\s+/g, ' ')}
-                                    >
-                                        Iniciar sesión
-                                    </Link>
-<Link
-    href="/register"
-    className="px-4 lg:px-6 py-2 bg-white text-background rounded-full font-medium hover:bg-[#21456b] hover:text-white transition-colors duration-300 hover:shadow-lg text-sm lg:text-base whitespace-nowrap"
->
-    Prueba gratis
-</Link>
-                                </>
-                            )}
-                        </div>
+                .navbar.top {
+                    background: transparent;
+                    border-bottom: 1px solid transparent;
+                    box-shadow: none;
+                }
 
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="md:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
-                            aria-label="Toggle menu"
-                        >
-                            <svg
-                                className="w-6 h-6"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                {mobileMenuOpen ? (
-                                    <path d="M6 18L18 6M6 6l12 12" />
-                                ) : (
-                                    <path d="M4 6h16M4 12h16M4 18h16" />
-                                )}
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+                .navbar.scrolled {
+                    background: rgba(12, 28, 52, 0.82);
+                    backdrop-filter: blur(24px) saturate(180%);
+                    -webkit-backdrop-filter: blur(24px) saturate(180%);
+                    border-bottom: 1px solid rgba(255,255,255,0.08);
+                    box-shadow: 0 8px 40px rgba(0,0,0,0.28);
+                }
 
-                {/* Mobile Menu */}
-                <div
-                    className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-                        }`}
-                >
-                    <div className="px-4 pt-2 pb-6 space-y-3 bg-background/95 backdrop-blur-sm border-t border-white/10">
-                        {/* Navigation Links - Mobile */}
-                        {navLinks.map((link) => (
-                            <a
-                                key={link.href}
-                                href={link.href}
-                                onClick={handleNavClick}
-                                className="block px-4 py-3 text-white hover:bg-white/10 rounded-lg transition font-medium"
-                            >
-                                {link.label}
-                            </a>
-                        ))}
-
-                        {/* Auth Buttons - Mobile */}
-                        <div className="pt-4 space-y-3 border-t border-white/10">
-                            {auth?.user ? (
-                                <>
-                                    <div className="px-4 py-2 text-sm text-white/80">
-                                        Hola, {auth.user.name}!
-                                    </div>
-                                    <Link
-                                        href="/settings/profile"
-                                        onClick={handleNavClick}
-                                        className="block px-4 py-3 text-white hover:bg-white/10 rounded-lg transition font-medium text-center"
-                                    >
-                                        Configuración
-                                    </Link>
-                                </>
-                            ) : (
-                                <>
-                                    <Link
-                                        href="/login"
-                                        onClick={handleNavClick}
-                                        className="flex items-center justify-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-full font-medium hover:bg-white/20 transition-all mx-4"
-                                    >
-                                        <span className="text-lg">👤</span>
-                                        Iniciar sesión
-                                    </Link>
-                                    <Link
-                                        href="/register"
-                                        onClick={handleNavClick}
-                                        className="block px-4 py-3 bg-foreground text-white rounded-full font-medium hover:bg-[#21456b] transition-colors duration-300 text-center mx-4"
-                                    >
-                                        Prueba gratis
-                                    </Link>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Espaciador para navbar fijo */}
-            <div className="h-16 sm:h-20"></div>
-
-            {/* Contenido principal */}
-            <main>
-                {children}
-            </main>
-        </div>
-    );
+                /* ─────────────────────────────────────────
+                   INNER — 3 zonas con grid para centrado
+                   perfecto independiente del contenido
+                ───────────────────────────────────────── */
+.navbar-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 36px;
+    height: 76px;
+    min-height: 76px;  /* 👈 */
+    max-height: 76px;  /* 👈 fuerza el height fijo */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    overflow: hidden;  /* 👈 evita que el logo expanda el navbar */
 }
+
+                /* ── LOGO (zona izquierda) ── */
+                .nav-logo {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-start;
+                    text-decoration: none;
+                }
+.nav-logo img {
+    height: 80px;
+    width: auto;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    display: block;  /* 👈 evita espacio extra de inline */
+}
+                .nav-logo:hover img {
+                    opacity: 0.85;
+                    transform: scale(1.03);
+                }
+
+                /* ── LINKS (zona central — siempre centrada) ── */
+                .nav-links {
+                    display: flex;
+                    align-items: center;
+                    gap: 2px;
+                    background: rgba(255,255,255,0.06);
+                    border: 1px solid rgba(255,255,255,0.10);
+                    border-radius: 100px;
+                    padding: 5px 6px;
+                    backdrop-filter: blur(10px);
+                    transition: background 0.3s ease, border-color 0.3s ease;
+                }
+                .navbar.top .nav-links {
+                    background: rgba(255,255,255,0.08);
+                    border-color: rgba(255,255,255,0.14);
+                }
+                .navbar.scrolled .nav-links {
+                    background: rgba(255,255,255,0.05);
+                    border-color: rgba(255,255,255,0.09);
+                }
+
+                .nav-link {
+                    padding: 7px 15px;
+                    border-radius: 100px;
+                    font-size: 13.5px;
+                    font-weight: 500;
+                    letter-spacing: 0.015em;
+                    color: rgba(255,255,255,0.7);
+                    text-decoration: none;
+                    transition: color 0.2s ease, background 0.2s ease;
+                    white-space: nowrap;
+                    cursor: pointer;
+                    position: relative;
+                }
+                .nav-link:hover {
+                    color: #ffffff;
+                    background: rgba(255,255,255,0.12);
+                }
+
+                /* ── AUTH (zona derecha) ── */
+                .nav-auth {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    gap: 10px;
+                        padding-left: 8px; /* 👈 empuja los botones hacia el borde derecho */
+
+                }
+
+                .nav-user-greeting {
+                    font-size: 13px;
+                    color: rgba(255,255,255,0.5);
+                    font-family: 'Plus Jakarta Sans', sans-serif;
+                }
+
+                /* Botón ghost — "Iniciar sesión" */
+                .nav-btn-ghost {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px 20px;
+                    border-radius: 100px;
+                    border: 1px solid rgba(255,255,255,0.28);
+                    background: rgba(255,255,255,0.07);
+                    color: rgba(255,255,255,0.88);
+                    font-family: 'Plus Jakarta Sans', sans-serif;
+                    font-size: 13.5px;
+                    font-weight: 500;
+                    text-decoration: none;
+                    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+                    white-space: nowrap;
+                    cursor: pointer;
+                    letter-spacing: 0.01em;
+                }
+                .nav-btn-ghost:hover {
+                    background: rgba(255,255,255,0.15);
+                    border-color: rgba(255,255,255,0.55);
+                    color: #ffffff;
+                }
+
+                                    /* Botón solid — "Prueba gratis" */
+.nav-btn-solid {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 22px;
+    border-radius: 100px;
+    border: none;
+    background: #ffffff;
+    color: #0c1c34;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    white-space: nowrap;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.nav-btn-solid:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    background: #eef1f8;
+}
+    .nav-btn-solid:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+                
+                                    /* Mobile menu */
+                                    .mobile-menu-btn {
+                                        display: none;
+                                        background: none;
+                                        border: none;
+                                        color: rgba(255,255,255,0.7);
+                                        font-size: 24px;
+                                        cursor: pointer;
+                                        transition: color 0.2s ease;
+                                    }
+                                    .mobile-menu-btn:hover {
+                                        color: #ffffff;
+                                    }
+                
+                                    @media (max-width: 768px) {
+                                        .navbar-inner {
+                                            grid-template-columns: 1fr auto;
+                                            padding: 0 20px;
+                                        }
+                                        .mobile-menu-btn {
+                                            display: block;
+                                        }
+                                        .nav-links {
+                                            display: none;
+                                            position: absolute;
+                                            top: 76px;
+                                            left: 0;
+                                            right: 0;
+                                            flex-direction: column;
+                                            background: rgba(12, 28, 52, 0.95);
+                                            border: none;
+                                            border-radius: 0;
+                                            padding: 20px;
+                                            gap: 0;
+                                        }
+                                        .nav-links.open {
+                                            display: flex;
+                                        }
+                                        .nav-link {
+                                            padding: 12px 0;
+                                            border-radius: 0;
+                                        }
+                                    }
+                                `}</style>
+                
+                            {/* Navbar */}
+                            <nav className={`navbar ${isScrolled ? 'scrolled' : 'top'}`}>
+                                <div className="navbar-inner">
+                                    <Link href="/" className="nav-logo">
+                                        <img src="assets/Logo.png" alt="TQIDO" />
+                                    </Link>
+                
+                                    <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
+                                        {navLinks.map((link) => (
+                                            <a
+                                                key={link.href}
+                                                href={link.href}
+                                                className="nav-link"
+                                                onClick={(e) => handleNavClick(e, link.href)}
+                                            >
+                                                {link.label}
+                                            </a>
+                                        ))}
+                                    </div>
+                
+                                    <div className="nav-auth">
+                                        {auth?.user ? (
+                                            <>
+                                                <span className="nav-user-greeting">
+                                                    Bienvenido, {auth.user.name}
+                                                </span>
+                                                <Link
+                                                    href="/dashboard"
+                                                    className="nav-btn-solid"
+                                                >
+                                                    Dashboard
+                                                </Link>
+                                                <Link
+                                                    href="/logout"
+                                                    method="post"
+                                                    as="button"
+                                                    className="nav-btn-ghost"
+                                                >
+                                                    Cerrar sesión
+                                                </Link>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Link
+                                                    href="/login"
+                                                    className="nav-btn-ghost"
+                                                >
+                                                    Iniciar sesión
+                                                </Link>
+                                                <Link
+                                                    href="/register"
+                                                    className="nav-btn-solid"
+                                                >
+                                                    Prueba gratis
+                                                </Link>
+                                            </>
+                                        )}
+                                    </div>
+                
+                                    <button
+                                        className="mobile-menu-btn"
+                                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                    >
+                                        ☰
+                                    </button>
+                                </div>
+                            </nav>
+                
+                            {/* Main content */}
+                            <main className="pt-[76px]">
+                                {children}
+                            </main>
+                        </div>
+                    );
+                }

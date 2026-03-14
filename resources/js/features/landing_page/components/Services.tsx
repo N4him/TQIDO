@@ -1,330 +1,496 @@
-import React, { useState } from 'react';
-import { Users, Heart, Sparkles, ArrowRight, ChevronRight, Verified } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from "react";
 
-interface Profile {
-  name: string;
-  role: string;
-  description: string;
-  image: string;
-  followers: number;
-  following: number;
-  verified: boolean;
+const tabs = [
+  { id: "seniors", label: "Mayores",  emoji: "🤍", accent: "#2e6fba" },
+  { id: "kids",    label: "Niños",    emoji: "👶", accent: "#2e6fba" },
+  { id: "pets",    label: "Mascotas", emoji: "🐾", accent: "#2e6fba" },
+];
+
+const profiles = {
+  seniors: [
+    { name: "María Dolores J.", role: "Auxiliar Sociosanitaria",  exp: "8 años",  badge: "Top Valorada", families: 534, img: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=500&h=600&fit=crop&crop=face", rating: 4.9 },
+    { name: "Roberto Álvarez",  role: "Gerocultor Certificado",   exp: "6 años",  badge: "Certificado",  families: 467, img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500&h=600&fit=crop&crop=face", rating: 4.8 },
+    { name: "Isabel Moreno",    role: "Enfermera Geriátrica",     exp: "12 años", badge: "Experta",       families: 621, img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&h=600&fit=crop&crop=face", rating: 5.0 },
+    { name: "Carlos Vega",      role: "Cuidador & Fisioterapeuta",exp: "9 años",  badge: "Especialista", families: 389, img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=500&h=600&fit=crop&crop=face", rating: 4.9 },
+  ],
+  kids: [
+    { name: "Ana García",       role: "Educadora Infantil",   exp: "8 años", badge: "Top Valorada", families: 147, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&h=600&fit=crop&crop=face", rating: 4.9 },
+    { name: "Carmen Rodríguez", role: "Niñera Profesional",    exp: "5 años", badge: "Verificada",  families: 203, img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&h=600&fit=crop&crop=face", rating: 4.8 },
+    { name: "Laura Martínez",   role: "Cuidadora Pediátrica",  exp: "7 años", badge: "Premiada",    families: 189, img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=600&fit=crop&crop=face", rating: 5.0 },
+    { name: "Sofía Blanco",     role: "Pedagoga Montessori",   exp: "4 años", badge: "Nueva",       families: 94,  img: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=500&h=600&fit=crop&crop=face", rating: 4.7 },
+  ],
+  pets: [
+    { name: "Miguel Fernández", role: "Cuidador de Mascotas",    exp: "6 años",  badge: "Destacado",   families: 312, img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=600&fit=crop&crop=face", rating: 4.9 },
+    { name: "Patricia Sánchez", role: "Veterinaria & Cuidadora", exp: "10 años", badge: "Top Valorada", families: 428, img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop&crop=face", rating: 5.0 },
+    { name: "David Torres",     role: "Especialista Animal",      exp: "8 años",  badge: "Verificado",  families: 267, img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&h=600&fit=crop&crop=face", rating: 4.8 },
+    { name: "Elena Ruiz",       role: "Dog Sitter Certificada",  exp: "5 años",  badge: "Verificada",  families: 178, img: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=500&h=600&fit=crop&crop=face", rating: 4.7 },
+  ],
+};
+
+function ProfileCard({ p, accent }: { p: typeof profiles[keyof typeof profiles][number]; accent: string }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div className="cp-card" onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <div className="cp-card-img-wrap">
+        <img src={p.img} alt={p.name} className="cp-card-img" style={{ transform: hov ? "scale(1.07)" : "scale(1)" }} />
+        <div className="cp-card-badge" style={{ background: accent }}>✓ {p.badge}</div>
+        <div className="cp-card-hover-cta" style={{ opacity: hov ? 1 : 0, transform: hov ? "translateY(0)" : "translateY(12px)" }}>
+          <button className="cp-hire-btn" style={{ background: accent }}>Ver perfil completo →</button>
+        </div>
+        <div className="cp-rating-chip" style={{ opacity: hov ? 1 : 0 }}>
+          <svg width="11" height="11" viewBox="0 0 20 20" fill="#f59e0b">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+          {p.rating}
+        </div>
+      </div>
+      <div className="cp-card-body">
+        <div className="cp-card-meta">
+          <span className="cp-families-badge" style={{ color: accent }}>
+            <span className="cp-dot" style={{ background: accent }} />
+            {p.families} familias
+          </span>
+          <span className="cp-exp">{p.exp} exp.</span>
+        </div>
+        <h3 className="cp-card-name">{p.name}</h3>
+        <p className="cp-card-role" style={{ color: accent }}>{p.role}</p>
+        <button className="cp-card-cta" style={{ borderColor: accent, color: accent }}>
+          Contratar ahora
+        </button>
+      </div>
+    </div>
+  );
 }
 
-interface Section {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: React.ComponentType<{ className?: string }>;
-  accentColor: string;
-  bgGradient: string;
-  profiles: Profile[];
-}
+function Carousel({ data, accent, visCount, isDesktop }: { data: typeof profiles[keyof typeof profiles]; accent: string; visCount: number; isDesktop: boolean }) {
+  const [idx, setIdx] = useState(0);
+  const [drag, setDrag] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const outerRef = useRef<HTMLDivElement>(null);
+  const touchX = useRef<number | null>(null);
+  const mouseX = useRef<number | null>(null);
 
-export default function ModernProfileSections() {
-  const [hoveredProfile, setHoveredProfile] = useState<string | null>(null);
+  const GAP = 16;
+  const maxIdx = Math.max(0, data.length - visCount);
+  const clamp = (v: number) => Math.max(0, Math.min(maxIdx, v));
 
-  const sections: Section[] = [
-    {
-      id: 'kids',
-      title: 'Kids Care Specialists',
-      subtitle: 'Expert guidance for your children\'s development and wellbeing',
-      icon: Sparkles,
-      accentColor: '#00d4ff',
-      bgGradient: 'from-violet-500/10 to-purple-500/10',
-      profiles: [
-        {
-          name: 'Emma Rodriguez',
-          role: 'Child Psychology Specialist',
-          description: 'Helping children develop emotional intelligence & confidence.',
-          image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
-          followers: 524,
-          following: 89,
-          verified: true
-        },
-        {
-          name: 'Lucas Chen',
-          role: 'Educational Content Creator',
-          description: 'Making learning fun and engaging for young minds.',
-          image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
-          followers: 392,
-          following: 156,
-          verified: true
-        },
-        {
-          name: 'Sofia Martinez',
-          role: 'Kids Wellness Coach',
-          description: 'Teaching mindfulness & healthy habits to children.',
-          image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
-          followers: 678,
-          following: 134,
-          verified: true
-        }
-      ]
-    },
-    {
-      id: 'pets',
-      title: 'Pet Wellness Experts',
-      subtitle: 'Comprehensive care for your beloved companions',
-      icon: Heart,
-      accentColor: '#00a896',
-      bgGradient: 'from-rose-500/10 to-pink-500/10',
-      profiles: [
-        {
-          name: 'Dr. James Wilson',
-          role: 'Veterinary Behaviorist',
-          description: 'Expert in pet psychology & animal wellness care.',
-          image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
-          followers: 1240,
-          following: 67,
-          verified: true
-        },
-        {
-          name: 'Maya Patel',
-          role: 'Pet Training Specialist',
-          description: 'Building stronger bonds between pets and owners.',
-          image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
-          followers: 856,
-          following: 203,
-          verified: true
-        },
-        {
-          name: 'Alex Thompson',
-          role: 'Animal Wellness Advocate',
-          description: 'Promoting holistic health for our furry friends.',
-          image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop',
-          followers: 945,
-          following: 178,
-          verified: true
-        }
-      ]
-    },
-    {
-      id: 'seniors',
-      title: 'Senior Care Professionals',
-      subtitle: 'Dedicated support for meaningful golden years',
-      icon: Users,
-      accentColor: '#1e3a8a',
-      bgGradient: 'from-cyan-500/10 to-blue-500/10',
-      profiles: [
-        {
-          name: 'Margaret Foster',
-          role: 'Senior Life Coach',
-          description: 'Empowering seniors to live vibrant & fulfilling lives.',
-          image: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=400&fit=crop',
-          followers: 1532,
-          following: 94,
-          verified: true
-        },
-        {
-          name: 'Robert Kim',
-          role: 'Geriatric Care Specialist',
-          description: 'Dedicated to improving quality of life for older adults.',
-          image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-          followers: 1089,
-          following: 142,
-          verified: true
-        },
-        {
-          name: 'Eleanor Davis',
-          role: 'Wellness & Activity Coordinator',
-          description: 'Creating joyful experiences for the golden years.',
-          image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop',
-          followers: 1876,
-          following: 211,
-          verified: true
-        }
-      ]
-    }
-  ];
+  const w = outerRef.current?.clientWidth ?? 900;
+  const cardW = (w - GAP * (visCount - 1)) / visCount;
+  const stepPx = cardW + GAP;
+  const base = -(idx * stepPx / w) * 100;
+  const dragPct = (drag / w) * 100;
+
+  const end = useCallback((offset: number) => {
+    const threshold = (outerRef.current?.clientWidth ?? 300) * 0.15;
+    if (offset < -threshold) setIdx(i => clamp(i + 1));
+    else if (offset > threshold) setIdx(i => clamp(i - 1));
+    setDrag(0); setDragging(false);
+  }, [maxIdx]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#2e6fba] via-[#3a7ac4] to-[#2e6fba]">
+    <div>
+      <div className="cp-carousel" ref={outerRef}>
+        <div
+          className="cp-track-clip"
+          style={{ cursor: !isDesktop ? (dragging ? "grabbing" : "grab") : "default", userSelect: "none" }}
+          onTouchStart={e => { touchX.current = e.touches[0].clientX; setDragging(true); }}
+          onTouchMove={e => { if (touchX.current !== null) setDrag(e.touches[0].clientX - touchX.current); }}
+          onTouchEnd={() => { end(drag); touchX.current = null; }}
+          onMouseDown={e => { if (!isDesktop) { mouseX.current = e.clientX; setDragging(true); } }}
+          onMouseMove={e => { if (!isDesktop && mouseX.current !== null) setDrag(e.clientX - mouseX.current); }}
+          onMouseUp={() => { if (!isDesktop && mouseX.current !== null) { end(drag); mouseX.current = null; } }}
+          onMouseLeave={() => { if (!isDesktop && mouseX.current !== null) { end(drag); mouseX.current = null; } }}
+        >
+          <div
+            className="cp-track"
+            style={{ transform: `translateX(${base + dragPct}%)`, transition: dragging ? "none" : "transform 0.45s cubic-bezier(.22,.68,0,1.2)" }}
+          >
+            {data.map((p, i) => <ProfileCard key={i} p={p} accent={accent} />)}
+          </div>
+        </div>
+      </div>
+
+      {isDesktop ? (
+        <div className="cp-nav">
+          <button className="cp-nav-btn" onClick={() => setIdx(i => clamp(i - 1))} disabled={idx === 0}>‹</button>
+          <span className="cp-nav-count">{idx + 1} / {maxIdx + 1}</span>
+          <button className="cp-nav-btn" onClick={() => setIdx(i => clamp(i + 1))} disabled={idx >= maxIdx}>›</button>
+        </div>
+      ) : (
+        <div className="cp-dots">
+          {Array.from({ length: maxIdx + 1 }).map((_, i) => (
+            <button key={i} className={`cp-dot-btn ${i === idx ? "active" : ""}`} onClick={() => setIdx(i)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CuidadoresPerfiles() {
+  const [activeTab, setActiveTab] = useState("seniors");
+  const [visCount, setVisCount] = useState(3);
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w <= 680) { setVisCount(1); setIsDesktop(false); }
+      else if (w <= 1024) { setVisCount(2); setIsDesktop(false); }
+      else { setVisCount(3); setIsDesktop(true); }
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const tab = tabs.find(t => t.id === activeTab) || tabs[0];
+
+  return (
+    <>
       <style>{`
-        :root {
-          --background: #2e6fba;
-          --foreground: #71aedd;
-        }
-        @keyframes float-in {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+        /*
+          PALETA Cuidadores — #1a4a8a (azul medio-oscuro)
+          Secuencia: #2e6fba → #2e6fba → #0e2d5a → #1a4a8a ← aquí
+          base:       #1a4a8a
+          acento:     #2e6fba  (hero color, para CTAs y badges)
+          acento2:    #a4c8ee  (azul claro para highlights)
+          card bg:    #ffffff  (máximo contraste para las cards de perfil)
+          dots:       rgba(255,255,255,0.1)
+          texto:      #ffffff
+          texto2:     rgba(255,255,255,0.6)
+        */
+
+        .cp-root {
+          font-family: 'DM Sans', sans-serif;
+          background: #1a4a8a;
+          color: #ffffff;
+          position: relative;
+          overflow-x: hidden;
+          padding-bottom: 80px;
         }
 
-        .float-in {
-          animation: float-in 0.8s ease-out forwards;
+        /* Dot texture — blanco sutil */
+        .cp-root::before {
+          content: '';
+          position: absolute; inset: 0;
+          background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+          background-size: 36px 36px;
+          pointer-events: none; z-index: 0;
         }
 
-        .glass-card {
-          background: rgba(113, 174, 221, 0.08);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(113, 174, 221, 0.15);
+        /* ── HERO ── */
+        .cp-hero {
+          position: relative; z-index: 1;
+          padding: 80px 48px 40px;
+          max-width: 1280px; margin: 0 auto;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: end; gap: 60px;
+        }
+        .cp-hero-eyebrow {
+          font-size: 11px; font-weight: 600; letter-spacing: 0.2em;
+          text-transform: uppercase; color: #a4c8ee;
+          margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+        }
+        .cp-hero-eyebrow::before {
+          content: ''; width: 28px; height: 1.5px; background: #a4c8ee;
+        }
+        .cp-hero h1 {
+          font-family: 'DM Serif Display', serif;
+          font-size: clamp(40px, 6vw, 72px);
+          font-weight: 400; line-height: 1.0;
+          color: #ffffff; margin: 0 0 18px;
+          letter-spacing: -0.5px;
+        }
+        .cp-hero h1 em { font-style: italic; color: #a4c8ee; }
+        .cp-hero-sub {
+          font-size: 16px; color: rgba(255,255,255,0.65);
+          line-height: 1.7; max-width: 480px; font-weight: 300;
+        }
+        .cp-hero-stats {
+          display: flex; flex-direction: column;
+          gap: 24px; flex-shrink: 0;
+        }
+        .cp-stat-item { text-align: right; }
+        .cp-stat-num {
+          font-family: 'DM Serif Display', serif;
+          font-size: 40px; font-weight: 400; line-height: 1;
+          color: #ffffff;
+        }
+        .cp-stat-lbl {
+          font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+          color: rgba(255,255,255,0.45); margin-top: 3px;
+        }
+        .cp-stat-divider {
+          width: 1px; height: 32px;
+          background: rgba(255,255,255,0.15);
+          margin-left: auto;
         }
 
-        .profile-image {
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        /* ── TABS ── */
+        .cp-tabs-wrap {
+          position: relative; z-index: 1;
+          max-width: 1280px; margin: 0 auto;
+          padding: 0 48px;
+          border-top: 1px solid rgba(255,255,255,0.12);
+          border-bottom: 1px solid rgba(255,255,255,0.12);
+          margin-bottom: 48px;
+        }
+        .cp-tabs { display: flex; }
+        .cp-tab {
+          display: flex; align-items: center; gap: 9px;
+          padding: 18px 32px;
+          font-size: 14px; font-weight: 500;
+          color: rgba(255,255,255,0.4);
+          background: none; border: none;
+          border-bottom: 2px solid transparent;
+          cursor: pointer; position: relative; bottom: -1px;
+          font-family: 'DM Sans', sans-serif;
+          transition: color 0.25s, border-color 0.25s;
+        }
+        .cp-tab:hover { color: rgba(255,255,255,0.75); }
+        .cp-tab.active { color: #ffffff; border-bottom-color: #a4c8ee; }
+        .cp-tab-emoji { font-size: 18px; }
+
+        /* ── SECTION HEADER ── */
+        .cp-section-head {
+          position: relative; z-index: 1;
+          max-width: 1280px; margin: 0 auto;
+          padding: 0 48px 24px;
+          display: flex; align-items: flex-end;
+          justify-content: space-between; gap: 40px;
+        }
+        .cp-section-tag {
+          display: inline-flex; align-items: center; gap: 6px;
+          font-size: 10px; font-weight: 600; letter-spacing: 0.18em;
+          text-transform: uppercase;
+          padding: 6px 14px; border-radius: 100px;
+          border: 1px solid rgba(255,255,255,0.25);
+          background: rgba(255,255,255,0.1); color: #ffffff;
+          margin-bottom: 14px;
+        }
+        .cp-section-title {
+          font-family: 'DM Serif Display', serif;
+          font-size: clamp(26px, 3.5vw, 42px);
+          font-weight: 400; line-height: 1.1; color: #ffffff;
+        }
+        .cp-section-sub {
+          font-size: 14px; color: rgba(255,255,255,0.55);
+          line-height: 1.7; max-width: 300px;
+          flex-shrink: 0; align-self: flex-end; font-weight: 300;
         }
 
-        .profile-card:hover .profile-image {
-          transform: scale(1.05);
+        /* ── CAROUSEL ── */
+        .cp-carousel {
+          position: relative; z-index: 1;
+          max-width: 1280px; margin: 0 auto;
+          padding: 0 48px;
+        }
+        .cp-track-clip { overflow: hidden; }
+        .cp-track { display: flex; gap: 16px; will-change: transform; }
+
+        /* ── CARD — blanco para máximo contraste sobre #1a4a8a ── */
+        .cp-card {
+          background: #ffffff;
+          border-radius: 22px;
+          overflow: hidden;
+          flex: 0 0 calc((100% - 32px) / 3);
+          transition: transform 0.4s cubic-bezier(.22,.68,0,1.2);
+        }
+        .cp-card:hover { transform: translateY(-8px); }
+
+        .cp-card-img-wrap {
+          position: relative; height: 220px; overflow: hidden;
+        }
+        .cp-card-img {
+          width: 100%; height: 100%; object-fit: cover;
+          object-position: center top;
+          transition: transform 0.65s cubic-bezier(.22,.68,0,1);
+        }
+        .cp-card-badge {
+          position: absolute; top: 14px; left: 14px;
+          font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+          text-transform: uppercase; color: #fff;
+          padding: 5px 12px; border-radius: 100px;
+        }
+        .cp-card-hover-cta {
+          position: absolute; inset: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(14,45,90,0.5);
+          transition: opacity 0.35s ease, transform 0.35s cubic-bezier(.22,.68,0,1.2);
+        }
+        .cp-hire-btn {
+          border: none; border-radius: 100px;
+          padding: 11px 22px;
+          font-size: 13px; font-weight: 600; color: #fff;
+          cursor: pointer; font-family: 'DM Sans', sans-serif;
+        }
+        .cp-rating-chip {
+          position: absolute; bottom: 12px; right: 12px;
+          display: flex; align-items: center; gap: 4px;
+          background: rgba(255,255,255,0.15);
+          border: 1px solid rgba(255,255,255,0.25);
+          border-radius: 100px;
+          padding: 4px 9px;
+          font-size: 12px; font-weight: 600; color: #fff;
+          backdrop-filter: blur(8px);
+          transition: opacity 0.3s ease;
         }
 
-        .scroll-indicator {
-          animation: bounce 2s infinite;
+        .cp-card-body { padding: 18px 20px 20px; background: #fff; }
+        .cp-card-meta {
+          display: flex; align-items: center; justify-content: space-between;
+          margin-bottom: 8px;
+        }
+        .cp-families-badge {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 12px; font-weight: 500;
+        }
+        .cp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .cp-exp { font-size: 11px; color: rgba(26,74,138,0.45); font-weight: 500; }
+        .cp-card-name {
+          font-family: 'DM Serif Display', serif;
+          font-size: 20px; font-weight: 400; color: #0e2d5a;
+          margin: 0 0 5px; line-height: 1.2;
+        }
+        .cp-card-role {
+          font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+          text-transform: uppercase; margin: 0 0 14px;
+        }
+        .cp-card-cta {
+          width: 100%; padding: 10px;
+          border-radius: 12px; border: 1.5px solid;
+          background: transparent;
+          font-size: 13px; font-weight: 600; cursor: pointer;
+          transition: background 0.2s, transform 0.2s;
+          font-family: 'DM Sans', sans-serif;
+          letter-spacing: 0.02em;
+        }
+        .cp-card-cta:hover { background: rgba(46,111,186,0.06); transform: translateY(-1px); }
+
+        /* ── NAV ── */
+        .cp-nav {
+          display: flex; align-items: center; justify-content: center;
+          gap: 14px; padding: 28px 0 0;
+          position: relative; z-index: 2;
+        }
+        .cp-nav-btn {
+          width: 44px; height: 44px; border-radius: 50%;
+          border: 1.5px solid rgba(255,255,255,0.25);
+          background: rgba(255,255,255,0.08); color: #fff;
+          font-size: 22px; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+          font-family: 'DM Sans', sans-serif;
+        }
+        .cp-nav-btn:hover:not(:disabled) {
+          background: rgba(255,255,255,0.18);
+          border-color: rgba(255,255,255,0.5);
+        }
+        .cp-nav-btn:disabled { opacity: 0.3; cursor: default; }
+        .cp-nav-count {
+          font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.55);
+          min-width: 44px; text-align: center;
         }
 
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
+        .cp-dots {
+          display: flex; justify-content: center; gap: 8px;
+          padding: 20px 0 0; position: relative; z-index: 2;
+        }
+        .cp-dot-btn {
+          width: 8px; height: 8px; border-radius: 50%;
+          background: rgba(255,255,255,0.25); border: none;
+          cursor: pointer; transition: background 0.25s, transform 0.25s; padding: 0;
+        }
+        .cp-dot-btn.active { background: #ffffff; transform: scale(1.3); }
+
+        @media (max-width: 1024px) {
+          .cp-hero { grid-template-columns: 1fr; }
+          .cp-hero-stats { flex-direction: row; }
+          .cp-stat-item { text-align: left; }
+          .cp-stat-divider { display: none; }
+          .cp-card { flex: 0 0 calc((100% - 16px) / 2); }
+        }
+        @media (max-width: 680px) {
+          .cp-hero { padding: 60px 20px 32px; }
+          .cp-tabs-wrap { padding: 0 20px; }
+          .cp-tab { padding: 14px 16px; font-size: 13px; }
+          .cp-section-head { padding: 0 20px 20px; flex-direction: column; align-items: flex-start; gap: 12px; }
+          .cp-section-sub { max-width: 100%; }
+          .cp-carousel { padding: 0 20px; }
+          .cp-card { flex: 0 0 100%; }
         }
       `}</style>
 
-      {/* Hero Section */}
-      <div className="relative px-6 pt-20 pb-32 overflow-hidden">
-        {/* Animated Grid Background */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(113,174,221,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(113,174,221,0.05)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_80%)]"></div>
-
-        <div className="relative max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 float-in">
-            <div className="w-2 h-2 rounded-full bg-[#71aedd] animate-pulse"></div>
-            <span className="text-sm font-medium text-white">10,000+ Verified Professionals</span>
+      <div className="cp-root" id="cuidadores">
+        {/* Hero */}
+        <div className="cp-hero">
+          <div>
+            <div className="cp-hero-eyebrow">Nuestros profesionales</div>
+            <h1>Profesionales <em>que cuidan</em><br />como familia</h1>
+            <p className="cp-hero-sub">
+              Más de 500 cuidadores verificados, formados y listos para cuidar
+              de quienes más quieres — personas mayores, niños y mascotas.
+            </p>
           </div>
-
-          <h1 className="text-6xl md:text-8xl font-black text-white mb-6 leading-none tracking-tight float-in" style={{ animationDelay: '0.1s' }}>
-            Discover Expert
-            <br />
-            <span className="bg-gradient-to-r from-[#71aedd] via-white to-[#9dd4f5] bg-clip-text text-transparent">
-              Care & Guidance
-            </span>
-          </h1>
-
-          <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto mb-12 float-in leading-relaxed" style={{ animationDelay: '0.2s' }}>
-            Connect with trusted specialists dedicated to the wellbeing of your kids, pets, and seniors
-          </p>
-
-          <button className="px-8 py-4 rounded-full bg-white text-[#2e6fba] font-bold text-lg hover:scale-105 transition-all shadow-2xl float-in hover:shadow-white/20" style={{ animationDelay: '0.3s' }}>
-            Explore All Experts
-          </button>
-        </div>
-
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 scroll-indicator">
-          <ChevronRight className="w-6 h-6 text-white/40 rotate-90" />
-        </div>
-      </div>
-
-      {/* Sections */}
-      <div className="max-w-7xl mx-auto px-6 space-y-32 pb-32">
-        {sections.map((section, sectionIdx) => {
-          const IconComponent = section.icon;
-
-          return (
-            <section id="services"  key={section.id} className="float-in" style={{ animationDelay: `${sectionIdx * 0.2}s` }}>
-              {/* Section Header */}
-<div className="mb-12">
-                <div 
-                  className="relative overflow-hidden rounded-4xl p-10 md:p-16 shadow-xl"
-                  style={{backgroundColor: section.accentColor}}
-                >
-                  <div className="relative flex items-center gap-8">
-                    {/* Simple icon circle */}
-                    <div 
-                      className="w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center flex-shrink-0 bg-white/20 backdrop-blur-sm"
-                    >
-                      <div style={{color: 'white'}}>
-                        <IconComponent className="w-12 h-12 md:w-14 md:h-14" />
-                      </div>
-                    </div>
-
-                    <div className="flex-1">
-                      <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tight mb-3 leading-tight">
-                        {section.title}
-                      </h2>
-                      <p className="text-white/90 text-lg md:text-xl">
-                        {section.subtitle}
-                      </p>
-                    </div>
-                  </div>
+          <div className="cp-hero-stats">
+            {[
+              { num: "500+", lbl: "Cuidadores activos" },
+              { num: "4.9★", lbl: "Valoración media" },
+              { num: "12K+", lbl: "Familias atendidas" },
+            ].map((s, i) => (
+              <>
+                {i > 0 && <div key={`d${i}`} className="cp-stat-divider" />}
+                <div className="cp-stat-item" key={s.lbl}>
+                  <div className="cp-stat-num">{s.num}</div>
+                  <div className="cp-stat-lbl">{s.lbl}</div>
                 </div>
-              </div>
+              </>
+            ))}
+          </div>
+        </div>
 
-              {/* Profile Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {section.profiles.map((profile, idx) => (
-                  <div
-                    key={idx}
-                    className="profile-card group rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl"
-                    onMouseEnter={() => setHoveredProfile(`${section.id}-${idx}`)}
-                    onMouseLeave={() => setHoveredProfile(null)}
-                  >
-                    {/* Image with Overlay Content */}
-                    <div className="relative h-[550px] overflow-hidden">
-                      <img
-                        src={profile.image}
-                        alt={profile.name}
-                        className="profile-image w-full h-full object-cover"
-                      />
+        {/* Tabs */}
+        <div className="cp-tabs-wrap">
+          <div className="cp-tabs">
+            {tabs.map(t => (
+              <button
+                key={t.id}
+                className={`cp-tab ${activeTab === t.id ? "active" : ""}`}
+                onClick={() => setActiveTab(t.id)}
+              >
+                <span className="cp-tab-emoji">{t.emoji}</span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-                      {/* Blur Overlay with Content */}
-                      <div className="absolute bottom-0 left-0 right-0 h-[240px] backdrop-blur-xl bg-white/70 p-6 flex flex-col justify-end">
-                        <div className="mb-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-xl font-bold text-gray-900">
-                              {profile.name}
-                            </h3>
-                            {profile.verified && (
-                              <Verified className="w-5 h-5 text-green-600 fill-green-600 flex-shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-600 leading-relaxed">
-                            {profile.description}
-                          </p>
-                        </div>
+        {/* Section header */}
+        <div className="cp-section-head">
+          <div>
+            <div className="cp-section-tag">{tab.emoji} Cuidadores de {tab.label}</div>
+            <div className="cp-section-title">Profesionales para {tab.label.toLowerCase()}</div>
+          </div>
+          <p className="cp-section-sub">
+            Cada cuidador pasa por un proceso de selección riguroso antes de aparecer en la plataforma.
+          </p>
+        </div>
 
-                        {/* Stats */}
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="flex items-center gap-1.5">
-                            <Users className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm font-medium text-gray-700">{profile.followers}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Users className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm font-medium text-gray-700">{profile.following}</span>
-                          </div>
-                        </div>
-
-                        {/* CTA Button */}
-                        <button
-                          className="w-full py-2.5 rounded-xl font-semibold text-gray-900 bg-white border border-gray-200 transition-all hover:bg-gray-50 hover:border-gray-300 flex items-center justify-center gap-2"
-                        >
-                          Follow
-                          <span className="text-lg leading-none">+</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* View All Link */}
-              <div className="mt-8 text-center">
-                <button
-                  className="inline-flex items-center gap-2 text-white/60 hover:text-white font-semibold transition-colors group"
-                >
-                  View all {section.title.toLowerCase()}
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </section>
-          );
-        })}
+        {/* Carousel */}
+        {tab && (
+          <Carousel
+            key={activeTab}
+            data={profiles[activeTab as keyof typeof profiles]}
+            accent={tab.accent}
+            visCount={visCount}
+            isDesktop={isDesktop}
+          />
+        )}
       </div>
-
-
-    </div>
+    </>
   );
 }
