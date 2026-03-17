@@ -12,25 +12,23 @@ const appName = import.meta.env.VITE_APP_NAME || 'TQido';
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) => {
-    // Páginas de auth y otras fuera de features
-    const directPages = import.meta.glob('./pages/**/*.tsx');
-    if (directPages[`./pages/${name}.tsx`]) {
+        const parts = name.split('/');
+
+        // Si tiene formato "feature/Page" → busca en features
+        if (parts.length === 2) {
+            const [feature, page] = parts;
+            return resolvePageComponent(
+                `./features/${feature}/pages/${page}.tsx`,
+                import.meta.glob('./features/**/pages/*.tsx'),
+            );
+        }
+
+        // Si es solo nombre → busca en pages raíz
         return resolvePageComponent(
             `./pages/${name}.tsx`,
-            directPages,
+            import.meta.glob('./pages/**/*.tsx'),
         );
-    }
-
-    // Páginas de features (ej: "landing_page/Home")
-    const parts = name.split('/');
-    const feature = parts[0];
-    const page = parts[1];
-
-    return resolvePageComponent(
-        `./features/${feature}/pages/${page}.tsx`,
-        import.meta.glob('./features/**/pages/*.tsx'),
-    );
-},
+    },
     setup({ el, App, props }) {
         const root = createRoot(el);
         root.render(

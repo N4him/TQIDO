@@ -6,9 +6,7 @@ import Features from '@/features/landing_page/components/Features';
 import About from '@/features/landing_page/components/About';
 import Services from '@/features/landing_page/components/Services';
 import Testimonials from '@/features/landing_page/components/Testimonials';
-import Pricing from '@/features/landing_page/components/Pricing';
 import CTA from '@/features/landing_page/components/CTA';
-import Contact from '@/features/landing_page/components/Contact';
 import Footer from '@/features/landing_page/components/Footer';
 import FAQS from '@/features/landing_page/components/FAQs';
 
@@ -22,15 +20,12 @@ export default function Home({ canRegister = true }: HomeProps) {
         <LandingLayout>
             <Head title="TQido" />
             <Hero />
-                        <About />
+            <About />
             <Features />
-
             <Services />
             <Testimonials />
-                        <FAQS />
-                                                <CTA />
-
-
+            <FAQS />
+            <CTA />
             <Footer />
         </LandingLayout>
     );

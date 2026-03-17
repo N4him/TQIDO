@@ -6,7 +6,7 @@ use Laravel\Fortify\Features;
 
 // ✅ Landing page pública - Ruta principal
 Route::get('/', function () {
-    return Inertia::render('Home', [
+    return Inertia::render('landing_page/Home', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-
+import "../../../../../resources/css/landing_page/footer.css";
 export default function Footer() {
     const currentYear = new Date().getFullYear();
 

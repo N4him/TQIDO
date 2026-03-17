@@ -7,12 +7,12 @@ export default function LandingLayout({ children }: PropsWithChildren) {
     const [isScrolled, setIsScrolled] = useState(false);
 
     const navLinks = [
-        { href: '#about',        label: 'Nosotros'        },
-        { href: '#features',     label: 'Características'  },
-        { href: '#services',     label: 'Servicios'        },
-        { href: '#testimonials', label: 'Testimonios'      },
-        { href: '#faqs',         label: 'FAQ'              },
-        { href: '#pricing',      label: 'Precios'          },
+        { href: '#about', label: 'Nosotros' },
+        { href: '#features', label: 'Características' },
+        { href: '#services', label: 'Servicios' },
+        { href: '#testimonials', label: 'Testimonios' },
+        { href: '#faqs', label: 'FAQ' },
+        { href: '#pricing', label: 'Precios' },
     ];
 
     useEffect(() => {
@@ -103,7 +103,7 @@ export default function LandingLayout({ children }: PropsWithChildren) {
                     text-decoration: none;
                 }
 .nav-logo img {
-    height: 80px;
+    height: 60px;
     width: auto;
     transition: opacity 0.25s ease, transform 0.25s ease;
     display: block;  /* 👈 evita espacio extra de inline */
@@ -267,79 +267,79 @@ export default function LandingLayout({ children }: PropsWithChildren) {
                                         }
                                     }
                                 `}</style>
-                
-                            {/* Navbar */}
-                            <nav className={`navbar ${isScrolled ? 'scrolled' : 'top'}`}>
-                                <div className="navbar-inner">
-                                    <Link href="/" className="nav-logo">
-                                        <img src="assets/Logo.png" alt="TQIDO" />
-                                    </Link>
-                
-                                    <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
-                                        {navLinks.map((link) => (
-                                            <a
-                                                key={link.href}
-                                                href={link.href}
-                                                className="nav-link"
-                                                onClick={(e) => handleNavClick(e, link.href)}
-                                            >
-                                                {link.label}
-                                            </a>
-                                        ))}
-                                    </div>
-                
-                                    <div className="nav-auth">
-                                        {auth?.user ? (
-                                            <>
-                                                <span className="nav-user-greeting">
-                                                    Bienvenido, {auth.user.name}
-                                                </span>
-                                                <Link
-                                                    href="/dashboard"
-                                                    className="nav-btn-solid"
-                                                >
-                                                    Dashboard
-                                                </Link>
-                                                <Link
-                                                    href="/logout"
-                                                    method="post"
-                                                    as="button"
-                                                    className="nav-btn-ghost"
-                                                >
-                                                    Cerrar sesión
-                                                </Link>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Link
-                                                    href="/login"
-                                                    className="nav-btn-ghost"
-                                                >
-                                                    Iniciar sesión
-                                                </Link>
-                                                <Link
-                                                    href="/register"
-                                                    className="nav-btn-solid"
-                                                >
-                                                    Prueba gratis
-                                                </Link>
-                                            </>
-                                        )}
-                                    </div>
-                
-                                    <button
-                                        className="mobile-menu-btn"
-                                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                    >
-                                        ☰
-                                    </button>
-                                </div>
-                            </nav>
-                
-                            {/* Main content */}
-                            <main className="pt-[76px]">
-                                {children}
-                            </main>
-                        </div>
-                    );
-                }
+
+            {/* Navbar */}
+            <nav className={`navbar ${isScrolled ? 'scrolled' : 'top'}`}>
+                <div className="navbar-inner">
+                    <Link href="/" className="nav-logo">
+                        <img src="assets/Logo_navbar.svg" alt="TQIDO" />
+                    </Link>
+
+                    <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
+                        {navLinks.map((link) => (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                className="nav-link"
+                                onClick={(e) => handleNavClick(e, link.href)}
+                            >
+                                {link.label}
+                            </a>
+                        ))}
+                    </div>
+
+                    <div className="nav-auth">
+                        {auth?.user ? (
+                            <>
+                                <span className="nav-user-greeting">
+                                    Bienvenido, {auth.user.name}
+                                </span>
+                                <Link
+                                    href="/dashboard"
+                                    className="nav-btn-solid"
+                                >
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    href="/logout"
+                                    method="post"
+                                    as="button"
+                                    className="nav-btn-ghost"
+                                >
+                                    Cerrar sesión
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="nav-btn-ghost"
+                                >
+                                    Iniciar sesión
+                                </Link>
+                                <Link
+                                    href="/register"
+                                    className="nav-btn-solid"
+                                >
+                                    Prueba gratis
+                                </Link>
+                            </>
+                        )}
+                    </div>
+
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        ☰
+                    </button>
+                </div>
+            </nav>
+
+            {/* Main content */}
+            <main className="pt-[76px]">
+                {children}
+            </main>
+        </div>
+    );
+}
