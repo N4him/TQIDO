@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "../../../../../resources/css/landing_page/hero.css";
+import "../../../css/landing_page/hero.css";
 
 const galleryItems = [
   {

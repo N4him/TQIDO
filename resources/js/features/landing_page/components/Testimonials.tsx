@@ -1,5 +1,5 @@
 import { useEffect, useRef, CSSProperties } from "react";
-import "../../../../../resources/css/landing_page/testimonials.css";
+import "../../../css/landing_page/testimonials.css";
 
 const testimonials = [
   {

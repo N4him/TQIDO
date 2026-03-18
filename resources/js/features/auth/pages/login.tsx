@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useForm } from '@inertiajs/react';
-import "../../../../../resources/css/auth/login.css";
+import "../../../css/auth/login.css";
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [focusedField, setFocusedField] = useState<string | null>(null);

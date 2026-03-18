@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import { Eye, EyeOff, ChevronLeft, Check } from 'lucide-react';
-import "../../../../../resources/css/auth/register_costumer.css";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 type Step = 1 | 2 | 3;
@@ -84,7 +83,7 @@ function MobileTopBar({ current }: { current: Step }) {
   const logoLeft = `${idx * pct + pct / 2}%`;
 
   return (
-    <div className="lg:hidden sticky top-0 z-20" style={{ background: '#0e2d5a' }}>
+    <div className="lg:hidden flex-shrink-0 z-20" style={{ background: '#0e2d5a' }}>
       <div className="absolute inset-0 pointer-events-none" style={{
         backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
         backgroundSize: '20px 20px',
@@ -166,7 +165,7 @@ function MobileTopBar({ current }: { current: Step }) {
 function Sidebar({ current }: { current: Step }) {
   return (
     <aside
-      className="hidden lg:flex w-[240px] flex-shrink-0 sticky top-0 h-screen flex-col"
+      className="hidden lg:flex w-[240px] flex-shrink-0 h-full flex-col"
       style={{ background: '#0e2d5a' }}
     >
       <div className="absolute inset-0 pointer-events-none" style={{
@@ -614,11 +613,17 @@ export default function RegisterCustomer() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row" style={{ background: '#f8fafc' }}>
+    // ← KEY CHANGE: h-screen overflow-hidden en el wrapper raíz
+    <div className="h-screen overflow-hidden flex flex-col lg:flex-row" style={{ background: '#f8fafc' }}>
+
+      {/* Mobile top bar: flex-shrink-0 para que no se comprima */}
       <MobileTopBar current={step} />
+
+      {/* Sidebar desktop: h-full en vez de h-screen */}
       <Sidebar current={step} />
 
-      <main className="flex-1 flex items-start justify-center py-6 sm:py-10 lg:py-12 px-4 sm:px-6 overflow-y-auto">
+      {/* Main: flex-1 + overflow-y-auto → solo esta zona hace scroll */}
+      <main className="flex-1 overflow-y-auto flex items-start justify-center py-6 sm:py-10 lg:py-12 px-4 sm:px-6">
         <form onSubmit={submit} className="w-full max-w-[500px]">
           <div
             className="bg-white rounded-2xl p-5 sm:p-8"

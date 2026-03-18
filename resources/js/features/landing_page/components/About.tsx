@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import "../../../../../resources/css/landing_page/about.css";
+import "../../../css/landing_page/about.css";
 
 export default function About() {
   const ref = useRef(null);

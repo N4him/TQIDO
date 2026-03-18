@@ -1,7 +1,6 @@
 import { useState, useRef, KeyboardEvent } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Eye, EyeOff, ChevronLeft, Upload, X, Check } from 'lucide-react';
-import "../../../../../resources/css/auth/register_carer.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Step = 1 | 2 | 3 | 4;

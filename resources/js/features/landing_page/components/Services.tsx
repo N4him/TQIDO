@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import "../../../../../resources/css/landing_page/services.css";
+import "../../../css/landing_page/services.css";
 
 const tabs = [
   { id: "seniors", label: "Mayores",  emoji: "🤍", accent: "#2e6fba" },

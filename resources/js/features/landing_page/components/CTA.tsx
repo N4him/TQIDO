@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import "../../../../../resources/css/landing_page/cta.css";
+import "../../../css/landing_page/cta.css";
 export default function SplitCTA() {
   const [hovered, setHovered] = useState<"left" | "right" | null>(null);
   const [tapped, setTapped] = useState<"left" | "right" | null>(null);

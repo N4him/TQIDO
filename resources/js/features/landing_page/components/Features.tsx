@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import "../../../../../resources/css/landing_page/features.css";
+import "../../../css/landing_page/features.css";
 
 const features = [
   {

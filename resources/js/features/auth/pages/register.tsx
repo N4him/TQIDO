@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import "../../../../../resources/css/auth/register.css";
+import "../../../css/auth/register.css";
 
 const CARER_FEATURES = [
   'Perfil profesional verificado',

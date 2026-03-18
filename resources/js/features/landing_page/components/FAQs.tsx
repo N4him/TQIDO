@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import "../../../../../resources/css/landing_page/faqs.css";
+import "../../../css/landing_page/faqs.css";
 
 const faqs = [
     {
