@@ -26,17 +26,19 @@ class FortifyServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-public function boot(): void
-{
-    // Fortify ya tiene esto o similar — aquí defines qué TSX renderiza
-    Fortify::registerView(function () {
-        return Inertia::render('Auth/Register'); // 👈 tu Register.tsx normal
-    });
+    public function boot(): void
+    {
+        $this->configureRateLimiting();
 
-    Fortify::loginView(function () {
-        return Inertia::render('Auth/Login');
-    });
-}
+        // Fortify ya tiene esto o similar — aquí defines qué TSX renderiza
+        Fortify::registerView(function () {
+            return Inertia::render('Auth/Register'); // 👈 tu Register.tsx normal
+        });
+
+        Fortify::loginView(function () {
+            return Inertia::render('Auth/Login');
+        });
+    }
 
     /**
      * Configure Fortify actions.

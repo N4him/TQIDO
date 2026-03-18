@@ -22,30 +22,31 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
+            return inertia('Auth/Login', [
                 'status' => 'error',
                 'message' => 'Datos inválidos.',
                 'errors' => $validator->errors(),
-            ], 422);
+            ]);
         }
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            return inertia('Auth/Login', [
                 'status' => 'error',
                 'message' => 'Credenciales incorrectas.',
-            ], 401);
+            ]);
         }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        // $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
+        return inertia('Dashboard', [
             'message' => 'Inicio de sesión exitoso.',
             'user' => $user,
-            'token' => $token,
-        ], 200);
+            // 'token' => $token,
+        ]);
     }
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -93,6 +94,7 @@ class AuthController extends Controller
             // 'token' => $token,
         ], 201);
     }
+
     public function completeProfile(Request $request)
     {
         $validator = Validator::make($request->all(), [
