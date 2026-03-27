@@ -1,683 +1,437 @@
-import { useState } from 'react';
-import { Link, useForm } from '@inertiajs/react';
-import { Eye, EyeOff, ChevronLeft, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff, ArrowRight, Check } from 'lucide-react';
 
-// ─── Types ─────────────────────────────────────────────────────────────────
-type Step = 1 | 2 | 3;
-
-// ─── Constants ─────────────────────────────────────────────────────────────
-const STEPS = [
-  { num: 1, label: 'Cuenta',  sub: 'Acceso'    },
-  { num: 2, label: 'Datos',   sub: 'Personales' },
-  { num: 3, label: 'Cuidado', sub: 'Perfil'     },
-];
-
-const CARE_TYPES = ['Personas mayores', 'Niños y bebés', 'Personas con discapacidad', 'Mascotas'];
-
-const ZONES = [
-  'Centro', 'Arganzuela', 'Retiro', 'Salamanca', 'Chamartín', 'Tetuán',
-  'Chamberí', 'Fuencarral', 'Moncloa', 'Latina', 'Carabanchel', 'Usera',
-];
-
-const INFO_CARDS = [
-  {
-    icon: '🔍',
-    title: 'Cuidadores verificados',
-    desc: 'Todos los cuidadores pasan por verificación de identidad, antecedentes y experiencia.',
-    color: 'rgba(46,111,186,0.08)',
-  },
-  {
-    icon: '🛡️',
-    title: 'Tu privacidad, protegida',
-    desc: 'Tus datos personales y los de tu familia nunca se comparten con terceros.',
-    color: 'rgba(34,197,94,0.08)',
-  },
-  {
-    icon: '💬',
-    title: 'Comunicación directa',
-    desc: 'Contacta con los cuidadores directamente, sin intermediarios ni comisiones ocultas.',
-    color: 'rgba(245,158,11,0.08)',
-  },
-];
-
-// ─── Style helpers ──────────────────────────────────────────────────────────
-const dmSans  = "'DM Sans', sans-serif";
-const dmSerif = "'DM Serif Display', serif";
-const LOGO_WIDTH = 80;
-
-const inputCls = [
-  'w-full border border-[#e2e8f0] rounded-xl px-4 py-3',
-  'text-sm text-[#0e2d5a] placeholder-[#94a3b8]',
-  'focus:outline-none focus:border-[#2e6fba] focus:ring-2 focus:ring-[#2e6fba]/20',
-  'transition-all bg-white',
-].join(' ');
-
-// ─── Utilities ──────────────────────────────────────────────────────────────
-function toggle<T>(arr: T[], item: T): T[] {
-  return arr.includes(item) ? arr.filter(x => x !== item) : [...arr, item];
+function getScore(val: string | any[]) {
+  const str = typeof val === 'string' ? val : '';
+  let s = 0;
+  if (str.length >= 8)          s++;
+  if (/[A-Z]/.test(str))        s++;
+  if (/[0-9]/.test(str))        s++;
+  if (/[^A-Za-z0-9]/.test(str)) s++;
+  return s;
 }
+const SW_COLORS = ['#ef4444','#f97316','#eab308','#22c55e'];
+const SW_LABELS = ['Muy débil','Débil','Media','Fuerte'];
 
-// ─── Chip ───────────────────────────────────────────────────────────────────
-function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function StrengthBars({ password, }: { password: string }) {
+  const score = password.length === 0 ? 0 : getScore(password);
+  const color = score > 0 ? SW_COLORS[score - 1] : '#cce8f6';
+  const label = password.length === 0 ? 'Mínimo 8 caracteres' : (SW_LABELS[score - 1] ?? 'Muy débil');
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{ fontFamily: dmSans }}
-      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
-        active
-          ? 'bg-[#2e6fba] border-[#2e6fba] text-white'
-          : 'bg-white border-[#e2e8f0] text-[#475569] hover:border-[#2e6fba] hover:text-[#2e6fba]'
-      }`}
-    >
-      {active && '✓ '}{label}
-    </button>
-  );
-}
-
-// ─── Mobile Top Bar ─────────────────────────────────────────────────────────
-function MobileTopBar({ current }: { current: Step }) {
-  const totalSteps = STEPS.length;
-  const idx = current - 1;
-  const pct = 100 / totalSteps;
-  const logoLeft = `${idx * pct + pct / 2}%`;
-
-  return (
-    <div className="lg:hidden flex-shrink-0 z-20" style={{ background: '#0e2d5a' }}>
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
-        backgroundSize: '20px 20px',
-      }} />
-
-      <div className="relative z-10 px-4 pt-3 pb-3">
-        <div className="relative">
-
-          {/* Floating logo */}
-          <div style={{
-            position: 'absolute', top: 0, left: logoLeft,
-            transform: 'translateX(-50%)',
-            transition: 'left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            gap: '2px', pointerEvents: 'none', height: '40px',
-            justifyContent: 'flex-end', zIndex: 10,
-          }}>
-            <img src="../assets/Logo_symbol.png" alt="TQido" style={{ width: 24, height: 'auto', objectFit: 'contain' }} />
-            <div style={{
-              width: 0, height: 0,
-              borderLeft: '4px solid transparent', borderRight: '4px solid transparent',
-              borderTop: '5px solid rgba(164,200,238,0.7)',
-            }} />
-          </div>
-
-          {/* Step row */}
-          <div className="relative flex w-full" style={{ paddingTop: '40px' }}>
-
-            {/* Connector lines */}
-            {[0, 1].map(i => (
-              <div
-                key={i}
-                className="absolute h-0.5 rounded-full transition-all duration-500"
-                style={{
-                  left:  `calc(${i * pct + pct / 2}% + 16px)`,
-                  right: `calc(${(totalSteps - 1 - i) * pct + pct / 2}% + 16px)`,
-                  top: '16px',
-                  background: current > i + 1 ? '#2e6fba' : 'rgba(46,111,186,0.2)',
-                }}
-              />
-            ))}
-
-            {STEPS.map(s => {
-              const done   = current > s.num;
-              const active = current === s.num;
-              return (
-                <div key={s.num} className="flex flex-col items-center" style={{ width: `${pct}%` }}>
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
-                    style={{
-                      background: done ? '#2e6fba' : active ? 'white' : 'rgba(46,111,186,0.15)',
-                      border:    active ? '2px solid #2e6fba' : 'none',
-                      boxShadow: active ? '0 0 0 4px rgba(46,111,186,0.25), 0 2px 12px rgba(46,111,186,0.4)' : 'none',
-                      position: 'relative', zIndex: 1,
-                    }}
-                  >
-                    {done
-                      ? <Check size={14} color="white" strokeWidth={2.5} />
-                      : <span className="text-xs font-bold" style={{ fontFamily: dmSans, color: active ? '#2e6fba' : 'rgba(113,174,221,0.4)' }}>{s.num}</span>
-                    }
-                  </div>
-                  <span
-                    className="text-[9px] font-semibold leading-none text-center mt-1"
-                    style={{ fontFamily: dmSans, color: active ? '#ffffff' : done ? '#71aedd' : 'rgba(113,174,221,0.35)' }}
-                  >
-                    {s.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Desktop Sidebar ────────────────────────────────────────────────────────
-function Sidebar({ current }: { current: Step }) {
-  return (
-    <aside
-      className="hidden lg:flex w-[240px] flex-shrink-0 h-full flex-col"
-      style={{ background: '#0e2d5a' }}
-    >
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
-        backgroundSize: '24px 24px',
-      }} />
-
-      <div className="relative z-10 flex flex-col h-full px-7 py-8">
-
-        {/* Logo */}
-        <div className="mb-8 flex justify-center">
-          <img src="../assets/Logo_symbol.png" alt="TQido" style={{ width: LOGO_WIDTH, height: 'auto', objectFit: 'contain' }} />
-        </div>
-
-        <nav className="flex flex-1">
-          {/* Circle column */}
-          <div className="flex flex-col items-center" style={{ width: '40px', flexShrink: 0 }}>
-            {STEPS.map((s, i) => {
-              const done   = current > s.num;
-              const active = current === s.num;
-              const isLast = i === STEPS.length - 1;
-              return (
-                <div key={s.num} className="flex flex-col items-center" style={{ flex: isLast ? '0 0 auto' : 1 }}>
-                  <div className="relative flex-shrink-0">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
-                      style={{
-                        background: done ? '#2e6fba' : active ? 'white' : 'rgba(46,111,186,0.12)',
-                        border:    active ? '2px solid #2e6fba' : done ? 'none' : '1.5px solid rgba(46,111,186,0.25)',
-                        boxShadow: active ? '0 0 0 6px rgba(46,111,186,0.18), 0 4px 16px rgba(46,111,186,0.35)' : 'none',
-                      }}
-                    >
-                      {done
-                        ? <Check size={16} color="white" strokeWidth={2.5} />
-                        : active
-                          ? <span className="text-base font-black" style={{ color: '#2e6fba', fontFamily: dmSans }}>{s.num}</span>
-                          : <span className="text-sm font-semibold" style={{ color: 'rgba(113,174,221,0.4)', fontFamily: dmSans }}>{s.num}</span>
-                      }
-                    </div>
-                    {active && (
-                      <div
-                        className="absolute inset-0 rounded-full animate-ping"
-                        style={{ background: 'rgba(46,111,186,0.2)', animationDuration: '2s' }}
-                      />
-                    )}
-                  </div>
-                  {!isLast && (
-                    <div
-                      className="flex-1 w-0.5 my-1 rounded-full transition-all duration-500"
-                      style={{ background: done ? '#2e6fba' : 'rgba(46,111,186,0.2)', minHeight: '24px' }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Label column */}
-          <div className="flex flex-col flex-1 pl-3.5">
-            {STEPS.map((s, i) => {
-              const done   = current > s.num;
-              const active = current === s.num;
-              const isLast = i === STEPS.length - 1;
-              return (
-                <div key={s.num} className="flex items-start" style={{ flex: isLast ? '0 0 auto' : 1 }}>
-                  <div className="flex items-center justify-between w-full" style={{ height: '40px' }}>
-                    <div>
-                      <p
-                        className="text-sm font-semibold leading-tight transition-all duration-300"
-                        style={{ fontFamily: dmSans, color: active ? '#ffffff' : done ? '#a4c8ee' : 'rgba(113,174,221,0.4)' }}
-                      >
-                        {s.label}
-                      </p>
-                      <p
-                        className="text-xs leading-tight mt-0.5 transition-all duration-300"
-                        style={{ fontFamily: dmSans, color: active ? '#71aedd' : done ? 'rgba(164,200,238,0.5)' : 'rgba(113,174,221,0.25)' }}
-                      >
-                        {s.sub}
-                      </p>
-                    </div>
-                    {done && (
-                      <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                        style={{ fontFamily: dmSans, background: 'rgba(46,111,186,0.2)', color: '#71aedd', border: '1px solid rgba(46,111,186,0.3)' }}
-                      >
-                        ✓
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* Bottom info card */}
-        <div
-          className="mt-8 rounded-2xl p-4"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(164,200,238,0.12)', backdropFilter: 'blur(8px)' }}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs" style={{ background: 'rgba(46,111,186,0.3)' }}>
-              🏠
-            </div>
-            <span className="text-xs font-semibold" style={{ color: '#a4c8ee', fontFamily: dmSans }}>
-              Plataforma segura
-            </span>
-          </div>
-          <p className="text-xs leading-relaxed" style={{ color: 'rgba(164,200,238,0.7)', fontFamily: dmSans }}>
-            Conectamos familias con <strong style={{ color: 'white' }}>cuidadores verificados</strong> en tu zona.
-          </p>
-        </div>
-
-        {/* Back link */}
-        <Link
-          href="/register"
-          className="mt-4 flex items-center justify-center gap-1.5 text-xs transition-colors"
-          style={{ fontFamily: dmSans, color: 'rgba(164,200,238,0.45)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#a4c8ee')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(164,200,238,0.45)')}
-        >
-          <ChevronLeft size={12} />
-          Cambiar tipo de registro
-        </Link>
-      </div>
-    </aside>
-  );
-}
-
-// ─── Step 1: Cuenta ─────────────────────────────────────────────────────────
-function Step1({ data, setData, errors }: any) {
-  const [showPwd,  setShowPwd]  = useState(false);
-  const [showCPwd, setShowCPwd] = useState(false);
-
-  const checkboxes = [
-    {
-      key: 'terms',
-      label: (
-        <>
-          Acepto los{' '}
-          <a href="/terms" target="_blank" className="font-semibold hover:underline" style={{ color: '#2e6fba' }}>Términos y Condiciones</a>
-          {' '}y la{' '}
-          <a href="/privacy" target="_blank" className="font-semibold hover:underline" style={{ color: '#2e6fba' }}>Política de Privacidad</a>
-        </>
-      ),
-    },
-    {
-      key: 'privacy',
-      label: 'Consiento el tratamiento de mis datos personales para la gestión de la plataforma',
-    },
-  ];
-
-  return (
-    <div>
-      <h2 className="text-xl sm:text-2xl font-bold mb-1" style={{ fontFamily: dmSerif, color: '#0e2d5a' }}>
-        Crea tu cuenta
-      </h2>
-      <p className="text-sm mb-5 sm:mb-6" style={{ fontFamily: dmSans, color: '#475569' }}>
-        Paso 1 de 3 · Información de acceso
-      </p>
-
-      <div className="space-y-4">
-        {/* Nombre */}
-        <div>
-          <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Nombre completo</label>
-          <input className={inputCls} style={{ fontFamily: dmSans }} placeholder="Ej: María García López"
-            value={data.name} onChange={e => setData('name', e.target.value)} autoComplete="name" />
-          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Correo electrónico</label>
-          <input className={inputCls} style={{ fontFamily: dmSans }} type="email" placeholder="tu@email.com"
-            value={data.email} onChange={e => setData('email', e.target.value)} autoComplete="email" />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-        </div>
-
-        {/* Teléfono */}
-        <div>
-          <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Teléfono</label>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-1.5 border border-[#e2e8f0] rounded-xl px-3 py-3 bg-white min-w-[80px] flex-shrink-0">
-              <span>🇪🇸</span>
-              <span className="text-sm font-semibold" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>+34</span>
-            </div>
-            <input className={`${inputCls} flex-1`} style={{ fontFamily: dmSans }} placeholder="612 345 678"
-              value={data.phone} onChange={e => setData('phone', e.target.value)} autoComplete="tel" />
-          </div>
-          {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-        </div>
-
-        {/* Contraseña */}
-        <div>
-          <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Contraseña</label>
-          <div className="relative">
-            <input className={inputCls} style={{ fontFamily: dmSans }}
-              type={showPwd ? 'text' : 'password'} placeholder="Mínimo 8 caracteres"
-              value={data.password} onChange={e => setData('password', e.target.value)} autoComplete="new-password" />
-            <button type="button" onClick={() => setShowPwd(!showPwd)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#2e6fba] transition-colors">
-              {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-        </div>
-
-        {/* Confirmar */}
-        <div>
-          <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Confirmar contraseña</label>
-          <div className="relative">
-            <input className={inputCls} style={{ fontFamily: dmSans }}
-              type={showCPwd ? 'text' : 'password'} placeholder="Repite tu contraseña"
-              value={data.password_confirmation} onChange={e => setData('password_confirmation', e.target.value)} autoComplete="new-password" />
-            <button type="button" onClick={() => setShowCPwd(!showCPwd)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#2e6fba] transition-colors">
-              {showCPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Checkboxes */}
-        <div className="space-y-3 pt-1">
-          {checkboxes.map(({ key, label }) => (
-            <label key={key} className="flex items-start gap-2.5 cursor-pointer">
-              <div
-                onClick={() => setData(key, !(data as any)[key])}
-                className="w-4 h-4 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200"
-                style={{ background: (data as any)[key] ? '#2e6fba' : 'white', borderColor: (data as any)[key] ? '#2e6fba' : '#cbd5e0' }}
-              >
-                {(data as any)[key] && <Check size={10} className="text-white" />}
-              </div>
-              <span className="text-sm leading-relaxed" style={{ fontFamily: dmSans, color: '#475569' }}>{label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Divider + Google */}
-      <div className="relative my-5 sm:my-6">
-        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#e2e8f0]" /></div>
-        <div className="relative flex justify-center">
-          <span className="bg-white px-3 text-xs text-[#94a3b8]" style={{ fontFamily: dmSans }}>o</span>
-        </div>
-      </div>
-      <button
-        type="button"
-        className="w-full border border-[#e2e8f0] rounded-full py-3 flex items-center justify-center gap-2 text-sm font-semibold text-[#0e2d5a] hover:bg-[#f8fafc] hover:border-[#2e6fba] transition-all duration-200"
-        style={{ fontFamily: dmSans }}
-      >
-        <svg width="18" height="18" viewBox="0 0 18 18">
-          <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/>
-          <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/>
-          <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/>
-          <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/>
-        </svg>
-        Continuar con Google
-      </button>
-    </div>
-  );
-}
-
-// ─── Step 2: Datos personales ───────────────────────────────────────────────
-function Step2({ data, setData, errors }: any) {
-  return (
-    <div>
-      <h2 className="text-xl sm:text-2xl font-bold mb-1" style={{ fontFamily: dmSerif, color: '#0e2d5a' }}>
-        Datos personales
-      </h2>
-      <p className="text-sm mb-5 sm:mb-6" style={{ fontFamily: dmSans, color: '#475569' }}>
-        Paso 2 de 3 · Información básica
-      </p>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Fecha de nacimiento</label>
-          <input className={inputCls} style={{ fontFamily: dmSans }} type="date"
-            value={data.birth_date} onChange={e => setData('birth_date', e.target.value)} />
-          {errors.birth_date && <p className="text-red-500 text-xs mt-1">{errors.birth_date}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Dirección completa</label>
-          <input className={inputCls} style={{ fontFamily: dmSans }} placeholder="Calle, número, piso, puerta"
-            value={data.address} onChange={e => setData('address', e.target.value)} autoComplete="street-address" />
-          {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
-            <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Ciudad</label>
-            <input className={inputCls} style={{ fontFamily: dmSans }} placeholder="Ej: Madrid"
-              value={data.city} onChange={e => setData('city', e.target.value)} />
-            {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
-          </div>
-          <div className="sm:w-32">
-            <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Código postal</label>
-            <input className={inputCls} style={{ fontFamily: dmSans }} placeholder="28001"
-              value={data.postal_code} onChange={e => setData('postal_code', e.target.value)} />
-            {errors.postal_code && <p className="text-red-500 text-xs mt-1">{errors.postal_code}</p>}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>
-            DNI / NIE
-            <span className="ml-2 text-[10px] font-normal text-[#94a3b8] normal-case">(Opcional)</span>
-          </label>
-          <input className={inputCls} style={{ fontFamily: dmSans }} placeholder="12345678A"
-            value={data.dni} onChange={e => setData('dni', e.target.value)} />
-          <p className="text-xs mt-1" style={{ fontFamily: dmSans, color: '#94a3b8' }}>
-            Solo si deseas verificar tu identidad para mayor confianza
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Step 3: Perfil de cuidado ──────────────────────────────────────────────
-function Step3({ data, setData }: any) {
-  return (
-    <div>
-      <div className="text-center mb-6">
-        <div
-          className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl"
-          style={{ background: 'rgba(46,111,186,0.08)', border: '2px solid rgba(46,111,186,0.15)' }}
-        >
-          🤝
-        </div>
-        <h2 className="text-xl sm:text-2xl font-bold mb-1" style={{ fontFamily: dmSerif, color: '#0e2d5a' }}>
-          Perfil de cuidado
-        </h2>
-        <p className="text-sm" style={{ fontFamily: dmSans, color: '#475569' }}>
-          Paso 3 de 3 · Cuéntanos qué necesitas
-        </p>
-      </div>
-
-      {/* Info cards */}
-      <div className="space-y-3 mb-6">
-        {INFO_CARDS.map(card => (
-          <div
-            key={card.title}
-            className="flex items-start gap-3 p-4 rounded-xl transition-all duration-200"
-            style={{ border: '1px solid #e2e8f0', background: card.color }}
-          >
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0" style={{ background: 'white' }}>
-              {card.icon}
-            </div>
-            <div>
-              <p className="text-sm font-semibold mb-0.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>{card.title}</p>
-              <p className="text-xs leading-relaxed" style={{ fontFamily: dmSans, color: '#475569' }}>{card.desc}</p>
-            </div>
-          </div>
+    <div style={{ marginTop:6 }}>
+      <div style={{ display:'flex', gap:3 }}>
+        {[0,1,2,3].map(i => (
+          <div key={i} style={{
+            height:3, flex:1, borderRadius:999,
+            background: i < score ? color : '#cce8f6',
+            transition:'background 0.35s',
+          }}/>
         ))}
       </div>
-
-      {/* Care types */}
-      <div className="mb-5">
-        <label className="block text-sm font-semibold mb-1" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Tipo de cuidado que necesitas</label>
-        <p className="text-xs mb-2.5" style={{ fontFamily: dmSans, color: '#5a96d4' }}>Puedes seleccionar más de uno</p>
-        <div className="flex flex-wrap gap-2">
-          {CARE_TYPES.map(ct => (
-            <Chip key={ct} label={ct} active={data.care_types.includes(ct)}
-              onClick={() => setData('care_types', toggle(data.care_types, ct))} />
-          ))}
-        </div>
-      </div>
-
-      {/* Zones */}
-      <div className="mb-5">
-        <label className="block text-sm font-semibold mb-1" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>Zonas de interés</label>
-        <p className="text-xs mb-2.5" style={{ fontFamily: dmSans, color: '#5a96d4' }}>Selecciona los barrios donde buscarías cuidador</p>
-        <div className="flex flex-wrap gap-2">
-          {ZONES.map(z => (
-            <Chip key={z} label={z} active={data.care_zones.includes(z)}
-              onClick={() => setData('care_zones', toggle(data.care_zones, z))} />
-          ))}
-        </div>
-      </div>
-
-      {/* Notes */}
-      <div className="mb-5">
-        <label className="block text-sm font-semibold mb-1.5" style={{ fontFamily: dmSans, color: '#0e2d5a' }}>
-          Notas adicionales
-          <span className="ml-2 text-[10px] font-normal text-[#94a3b8] normal-case">(Opcional)</span>
-        </label>
-        <div className="relative">
-          <textarea
-            className="w-full border border-[#e2e8f0] rounded-xl px-4 py-3 text-sm text-[#0e2d5a] placeholder-[#94a3b8] focus:outline-none focus:border-[#2e6fba] focus:ring-2 focus:ring-[#2e6fba]/20 transition-all bg-white resize-none h-24"
-            style={{ fontFamily: dmSans }}
-            placeholder="Cuéntanos más sobre lo que necesitas..."
-            value={data.notes}
-            onChange={e => setData('notes', e.target.value)}
-            maxLength={400}
-          />
-          <span className="absolute bottom-2 right-3 text-[10px] text-[#94a3b8]" style={{ fontFamily: dmSans }}>
-            {data.notes.length}/400
-          </span>
-        </div>
-      </div>
-
-      {/* Final consent */}
-      <label
-        className="flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-[#f0f6ff]"
-        style={{ border: '1px solid rgba(46,111,186,0.2)', background: 'rgba(46,111,186,0.04)' }}
-      >
-        <div
-          onClick={() => setData('terms', !data.terms)}
-          className="w-4 h-4 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200"
-          style={{ background: data.terms ? '#2e6fba' : 'white', borderColor: data.terms ? '#2e6fba' : '#cbd5e0' }}
-        >
-          {data.terms && <Check size={10} className="text-white" />}
-        </div>
-        <span className="text-sm leading-relaxed" style={{ fontFamily: dmSans, color: '#475569' }}>
-          He leído y acepto las <strong style={{ color: '#0e2d5a' }}>condiciones de uso de la plataforma</strong> como cliente, incluyendo la{' '}
-          <a href="/privacy" style={{ color: '#2e6fba', fontWeight: 600 }}>política de privacidad</a>.
-        </span>
-      </label>
+      <p style={{
+        fontSize:10.5, marginTop:5, fontWeight:500,
+        color: password.length === 0 ? '#7a9ab8' : color,
+        transition:'color 0.35s',
+      }}>{label}</p>
     </div>
   );
 }
 
-// ─── Main ───────────────────────────────────────────────────────────────────
-export default function RegisterCustomer() {
-  const [step, setStep] = useState<Step>(1);
+function FieldLabel({ children, badge = undefined }: { children: React.ReactNode; badge?: string | undefined }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:6 }}>
+      <label style={{
+        fontSize:10.5, fontWeight:700, color:'#0b1f3a',
+        letterSpacing:'0.07em', textTransform:'uppercase',
+      }}>{children}</label>
+      {badge && (
+        <span style={{
+          fontSize:9, fontWeight:700, letterSpacing:'0.05em',
+          background:'#0e2d5a', color:'#fff',
+          padding:'2px 8px', borderRadius:999,
+        }}>{badge}</span>
+      )}
+    </div>
+  );
+}
 
-  const { data, setData, post, processing, errors } = useForm({
-    // step 1
-    name: '', email: '', phone: '', password: '', password_confirmation: '',
-    terms: false, privacy: false,
-    // step 2
-    birth_date: '', address: '', city: '', postal_code: '', dni: '',
-    // step 3
-    care_types: [] as string[], care_zones: [] as string[], notes: '',
+function Checkbox({ checked, onChange, children }: { checked: boolean; onChange: (value: boolean) => void; children: React.ReactNode }) {
+  return (
+    <label style={{ display:'flex', alignItems:'flex-start', gap:10, cursor:'pointer', userSelect:'none' }}>
+      <div onClick={() => onChange(!checked)} style={{
+        width:18, height:18, borderRadius:8, flexShrink:0, marginTop:2,
+        border:`2px solid ${checked ? '#0e2d5a' : '#cce8f6'}`,
+        background: checked ? '#0e2d5a' : 'transparent',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        transition:'all 0.18s',
+        boxShadow: checked ? '0 3px 10px rgba(14,45,90,0.22)' : 'none',
+      }}>
+        {checked && <Check size={10} color="#fff" strokeWidth={3}/>}
+      </div>
+      <span style={{ fontSize:12.5, color:'#4a6a80', lineHeight:1.65 }}>{children}</span>
+    </label>
+  );
+}
+
+const GoogleSVG = () => (
+  <svg width="16" height="16" viewBox="0 0 18 18">
+    <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/>
+    <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/>
+    <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/>
+    <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/>
+  </svg>
+);
+
+export default function RegisterCliente() {
+  const [form, setForm] = useState({
+    name:'', email:'', phone:'',
+    password:'', password_confirmation:'',
+    terms:false, privacy:false,
   });
+  const [showPw,  setShowPw]  = useState(false);
+  const [showCpw, setShowCpw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [ready,   setReady]   = useState(false);
 
-  const next = () => { if (step < 3) setStep(s => (s + 1) as Step); };
-  const back = () => { if (step > 1) setStep(s => (s - 1) as Step); };
+  useEffect(() => { const t = setTimeout(() => setReady(true), 60); return () => clearTimeout(t); }, []);
 
-  function submit(e: React.FormEvent) {
+  const set = (k: string, v: string | boolean) => setForm(p => ({ ...p, [k]: v }));
+  const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-    if (step < 3) { next(); return; }
-    post(route('register.customer.store'));
-  }
+    setLoading(true);
+    setTimeout(() => setLoading(false), 1800);
+  };
 
   return (
-    // ← KEY CHANGE: h-screen overflow-hidden en el wrapper raíz
-    <div className="h-screen overflow-hidden flex flex-col lg:flex-row" style={{ background: '#f8fafc' }}>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:'DM Sans', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
 
-      {/* Mobile top bar: flex-shrink-0 para que no se comprima */}
-      <MobileTopBar current={step} />
+        /* ─ layout ─ */
+        .cli-page { min-height:100vh; display:grid; grid-template-columns:44fr 56fr; }
 
-      {/* Sidebar desktop: h-full en vez de h-screen */}
-      <Sidebar current={step} />
+        /* ─ left: solid sky-blue ─ */
+        .cli-left {
+          background:#93dafa;
+          display:flex; flex-direction:column;
+          justify-content:center; align-items:flex-start;
+          padding:64px 52px; overflow:hidden;
+        }
 
-      {/* Main: flex-1 + overflow-y-auto → solo esta zona hace scroll */}
-      <main className="flex-1 overflow-y-auto flex items-start justify-center py-6 sm:py-10 lg:py-12 px-4 sm:px-6">
-        <form onSubmit={submit} className="w-full max-w-[500px]">
-          <div
-            className="bg-white rounded-2xl p-5 sm:p-8"
-            style={{ border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(30,95,170,0.08)' }}
-          >
-            {step === 1 && <Step1 data={data} setData={setData} errors={errors} />}
-            {step === 2 && <Step2 data={data} setData={setData} errors={errors} />}
-            {step === 3 && <Step3 data={data} setData={setData} />}
+        /* ─ right ─ */
+        .cli-right {
+          background:#ffffff;
+          display:flex; flex-direction:column;
+          justify-content:center; align-items:center;
+          padding:52px 64px; overflow-y:auto;
+        }
 
-            <div className={`flex mt-6 sm:mt-8 ${step > 1 ? 'justify-between' : 'justify-end'}`}>
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={back}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 hover:bg-[#f8fafc]"
-                  style={{ fontFamily: dmSans, border: '1px solid #e2e8f0', color: '#475569' }}
-                >
-                  <ChevronLeft size={15} />
-                  Atrás
-                </button>
-              )}
-              <button
-                type="submit"
-                disabled={processing || (step === 3 && !data.terms)}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 disabled:opacity-60 hover:opacity-90"
-                style={{ fontFamily: dmSans, background: '#2e6fba', boxShadow: '0 6px 24px rgba(30,95,170,0.35)' }}
-              >
-                {step === 3
-                  ? (processing ? 'Creando cuenta...' : 'Crear mi cuenta')
-                  : 'Continuar'
-                } {step !== 3 && '→'}
-              </button>
+        /* ─ inputs ─ */
+        .cli-input {
+          width:100%; border:1.5px solid #cce8f6; border-radius:14px;
+          padding:11px 15px;
+          font-family:'DM Sans', sans-serif; font-size:13.5px; color:#0b1f3a;
+          background:#f4f8fd; outline:none; transition:all 0.18s;
+        }
+        .cli-input::placeholder { color:#7a9ab8; }
+        .cli-input:hover  { border-color:#93dafa; background:#fff; }
+        .cli-input:focus  { border-color:#60c8f0; background:#fff;
+                            box-shadow:0 0 0 3.5px rgba(147,218,250,0.3); }
+
+        .cli-prefix {
+          display:flex; align-items:center; gap:6px;
+          border:1.5px solid #cce8f6; border-radius:14px;
+          padding:11px 13px; background:#e8f4fb;
+          font-size:13px; font-weight:600; color:#0b1f3a;
+          white-space:nowrap; flex-shrink:0;
+        }
+
+        /* ─ eye ─ */
+        .cli-eye {
+          position:absolute; right:11px; top:50%; transform:translateY(-50%);
+          background:none; border:none; cursor:pointer;
+          color:#7a9ab8; display:flex; padding:4px; transition:color 0.16s;
+        }
+        .cli-eye:hover { color:#0e2d5a; }
+
+        /* ─ primary btn ─ */
+        .cli-btn {
+          display:inline-flex; align-items:center; gap:8px;
+          padding:12px 26px; border-radius:999px; border:none;
+          background:#0e2d5a; color:#fff;
+          font-family:'DM Sans', sans-serif; font-size:13.5px; font-weight:600;
+          cursor:pointer; transition:all 0.2s;
+          box-shadow:0 4px 16px rgba(14,45,90,0.28); white-space:nowrap;
+        }
+        .cli-btn:hover    { background:#163f7a; transform:translateY(-2px);
+                            box-shadow:0 8px 24px rgba(14,45,90,0.34); }
+        .cli-btn:active   { transform:none; }
+        .cli-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
+
+        /* ─ google btn ─ */
+        .cli-google {
+          width:100%; border:1.5px solid #cce8f6; border-radius:14px;
+          padding:11px 18px; background:#fff; cursor:pointer;
+          display:flex; align-items:center; justify-content:center; gap:9px;
+          font-family:'DM Sans', sans-serif; font-size:13px; font-weight:600;
+          color:#0b1f3a; transition:all 0.18s;
+          box-shadow:0 2px 8px rgba(11,31,58,0.06);
+        }
+        .cli-google:hover { border-color:#93dafa; box-shadow:0 3px 16px rgba(147,218,250,0.3); }
+
+        /* ─ link ─ */
+        .cli-link {
+          color:#0e2d5a; font-weight:700; text-decoration:none;
+          border-bottom:1.5px solid #cce8f6; transition:border-color 0.16s;
+        }
+        .cli-link:hover { border-color:#0e2d5a; }
+
+        /* ─ checks block ─ */
+        .cli-checks {
+          background:#f4f8fd; border:1.5px solid #cce8f6;
+          border-radius:14px; padding:14px 16px;
+          display:flex; flex-direction:column; gap:11px;
+        }
+
+        /* ─ divider ─ */
+        .cli-div-line { flex:1; height:1px;
+          background:linear-gradient(to right, transparent, #cce8f6, transparent); }
+
+        /* ─ card tag (kit pattern) ─ */
+        .cli-badge-chip {
+          display:inline-flex; align-items:center; gap:5px;
+          padding:5px 14px; border-radius:999px;
+          background:rgba(11,34,66,0.08); border:1px solid rgba(11,34,66,0.14);
+          font-size:11.5px; font-weight:600; color:#0b2242; letter-spacing:0.04em;
+        }
+
+        /* ─ animations ─ */
+        .cli-l-enter { opacity:0; transform:translateX(-18px);
+          animation:cliL 0.55s cubic-bezier(.22,1,.36,1) forwards; }
+        .cli-r-enter { opacity:0; transform:translateY(14px);
+          animation:cliR 0.5s cubic-bezier(.22,1,.36,1) 0.08s forwards; }
+        @keyframes cliL { to { opacity:1; transform:none; } }
+        @keyframes cliR { to { opacity:1; transform:none; } }
+        @keyframes cliSpin { to { transform:rotate(360deg); } }
+
+        @media (max-width:860px) {
+          .cli-page { grid-template-columns:1fr; }
+          .cli-left { display:none !important; }
+          .cli-right { padding:36px 24px; }
+        }
+      `}</style>
+
+      <div className="cli-page">
+
+        {/* ─── LEFT ─── */}
+        <div className="cli-left">
+          <div className={ready ? 'cli-l-enter' : ''} style={{ maxWidth:360 }}>
+
+            {/* Logo — kit pattern from nav-logo */}
+            <div style={{ display:'flex', alignItems:'center', gap:11, marginBottom:52 }}>
+              <div style={{
+                width:44, height:44, borderRadius:14,
+                background:'#0e2d5a',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontFamily:"'Fraunces', Georgia, serif", fontSize:20, color:'#93dafa',
+                fontWeight:400, boxShadow:'0 4px 16px rgba(14,45,90,0.22)',
+              }}>T</div>
+              <span style={{
+                fontFamily:"'Fraunces', Georgia, serif",
+                fontSize:24, color:'#0b2242', fontWeight:400, letterSpacing:'-0.02em',
+              }}>TQ<em style={{ fontStyle:'italic', color:'#0e2d5a' }}>ido</em></span>
             </div>
-          </div>
 
-          {/* Mobile info card */}
-          <div
-            className="lg:hidden mt-4 rounded-2xl p-4"
-            style={{ background: '#0e2d5a', border: '1px solid rgba(164,200,238,0.12)' }}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm">🏠</span>
-              <span className="text-xs font-semibold" style={{ color: '#a4c8ee', fontFamily: dmSans }}>Plataforma segura</span>
+            {/* Eyebrow — kit hero-eyebrow pattern */}
+            <div className="cli-badge-chip" style={{ marginBottom:22 }}>
+              <span>📍</span> Plataforma de confianza
             </div>
-            <p className="text-xs leading-relaxed" style={{ color: 'rgba(164,200,238,0.7)', fontFamily: dmSans }}>
-              Conectamos familias con <strong style={{ color: 'white' }}>cuidadores verificados</strong> en tu zona.
+
+            {/* Headline — kit hero-title pattern */}
+            <h2 style={{
+              fontFamily:"'Fraunces', Georgia, serif",
+              fontSize:46, lineHeight:1.1, color:'#0b2242',
+              fontWeight:300, marginBottom:14, letterSpacing:'-0.025em',
+            }}>
+              Cuida a los<br/>
+              <em style={{ fontStyle:'italic', color:'#0e2d5a' }}>que más amas</em>
+            </h2>
+            <p style={{
+              fontSize:14.5, color:'#1a4a66',
+              lineHeight:1.75, marginBottom:44, fontWeight:300,
+            }}>
+              Conectamos familias con cuidadores profesionales verificados.
+              Seguro, confiable y cercano.
             </p>
-          </div>
-        </form>
-      </main>
-    </div>
-  );
-}
 
-function route(arg0: string): string {
-  throw new Error('Function not implemented.');
+            {/* Social proof — kit trust-bar pattern */}
+            <div style={{
+              paddingTop:22, borderTop:'1px solid rgba(11,34,66,0.14)',
+              display:'flex', alignItems:'center', gap:14,
+            }}>
+              <div style={{ display:'flex' }}>
+                {['#0e2d5a','#1a5090','#2e6fba','#4a90d0'].map((c,i) => (
+                  <div key={i} style={{
+                    width:28, height:28, borderRadius:'50%',
+                    background:c, border:'2px solid #93dafa',
+                    marginLeft: i > 0 ? -9 : 0, flexShrink:0,
+                  }}/>
+                ))}
+              </div>
+              <p style={{ fontSize:12.5, color:'#1a4a66', lineHeight:1.55 }}>
+                <span style={{ color:'#0b2242', fontWeight:700 }}>+2.400 familias</span><br/>
+                ya confían en TQido
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── RIGHT ─── */}
+        <div className="cli-right">
+          <div className={ready ? 'cli-r-enter' : ''} style={{ width:'100%', maxWidth:430 }}>
+
+            {/* Header — kit nav-user pill pattern */}
+            <div style={{
+              display:'flex', alignItems:'center', gap:9, marginBottom:34,
+              padding:'6px 6px 6px 14px', borderRadius:999,
+              border:'1px solid #e8f4fb', background:'#fff',
+              boxShadow:'0 2px 8px rgba(11,31,58,0.06)',
+              width:'fit-content',
+            }}>
+              <span style={{ fontFamily:"'Fraunces', serif", fontSize:13, color:'#0b1f3a', fontWeight:400 }}>TQido</span>
+              <div style={{
+                padding:'4px 12px', borderRadius:999,
+                background:'#93dafa', color:'#0e2d5a',
+                fontSize:11, fontWeight:700, letterSpacing:'0.04em',
+              }}>Cliente</div>
+            </div>
+
+            {/* Heading */}
+            <h1 style={{
+              fontFamily:"'Fraunces', Georgia, serif",
+              fontSize:32, color:'#0b1f3a', fontWeight:300,
+              letterSpacing:'-0.025em', lineHeight:1.15, marginBottom:8,
+            }}>
+              Crea tu <em style={{ fontStyle:'italic', color:'#1a5090' }}>cuenta</em>
+            </h1>
+            <p style={{ fontSize:14, color:'#4a6a80', marginBottom:28, lineHeight:1.6, fontWeight:300 }}>
+              Encuentra el cuidador perfecto para tu familia.
+            </p>
+
+            <form onSubmit={handleSubmit} noValidate>
+              <div style={{ display:'flex', flexDirection:'column', gap:15 }}>
+
+                <div>
+                  <FieldLabel>Nombre completo</FieldLabel>
+                  <input className="cli-input" type="text" placeholder="María García López"
+                    autoComplete="name" value={form.name}
+                    onChange={e => set('name', e.target.value)}/>
+                </div>
+
+                <div>
+                  <FieldLabel>Correo electrónico</FieldLabel>
+                  <input className="cli-input" type="email" placeholder="correo@ejemplo.com"
+                    autoComplete="email" value={form.email}
+                    onChange={e => set('email', e.target.value)}/>
+                </div>
+
+                <div>
+                  <FieldLabel>Teléfono</FieldLabel>
+                  <div style={{ display:'flex', gap:8 }}>
+                    <div className="cli-prefix">🇨🇴 +57</div>
+                    <input className="cli-input" style={{ flex:1 }} type="tel"
+                      placeholder="300 123 4567" autoComplete="tel"
+                      value={form.phone} onChange={e => set('phone', e.target.value)}/>
+                  </div>
+                </div>
+
+                <div style={{ display:'flex', gap:12 }}>
+                  <div style={{ flex:1 }}>
+                    <FieldLabel>Contraseña</FieldLabel>
+                    <div style={{ position:'relative' }}>
+                      <input className="cli-input" style={{ paddingRight:40 }}
+                        type={showPw ? 'text' : 'password'} placeholder="Mín. 8 caracteres"
+                        autoComplete="new-password" value={form.password}
+                        onChange={e => set('password', e.target.value)}/>
+                      <button type="button" className="cli-eye" onClick={() => setShowPw(v => !v)}>
+                        {showPw ? <EyeOff size={15}/> : <Eye size={15}/>}
+                      </button>
+                    </div>
+                    <StrengthBars password={form.password}/>
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <FieldLabel>Confirmar</FieldLabel>
+                    <div style={{ position:'relative' }}>
+                      <input className="cli-input" style={{ paddingRight:40 }}
+                        type={showCpw ? 'text' : 'password'} placeholder="Repite la contraseña"
+                        autoComplete="new-password" value={form.password_confirmation}
+                        onChange={e => set('password_confirmation', e.target.value)}/>
+                      <button type="button" className="cli-eye" onClick={() => setShowCpw(v => !v)}>
+                        {showCpw ? <EyeOff size={15}/> : <Eye size={15}/>}
+                      </button>
+                    </div>
+                    {form.password_confirmation && (
+                      <p style={{
+                        fontSize:10.5, marginTop:6, fontWeight:500,
+                        color: form.password === form.password_confirmation ? '#22c55e' : '#ef4444',
+                      }}>
+                        {form.password === form.password_confirmation ? '✓ Coinciden' : '✗ No coinciden'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="cli-checks">
+                  <Checkbox checked={form.terms} onChange={v => set('terms', v)}>
+                    Acepto los{' '}
+                    <a href="/terms" target="_blank" className="cli-link">Términos y Condiciones</a>
+                    {' '}y la{' '}
+                    <a href="/privacy" target="_blank" className="cli-link">Política de Privacidad</a>
+                  </Checkbox>
+                  <Checkbox checked={form.privacy} onChange={v => set('privacy', v)}>
+                    Consiento el tratamiento de mis datos para la gestión de la plataforma
+                  </Checkbox>
+                </div>
+              </div>
+
+              <div style={{ display:'flex', alignItems:'center', gap:12, margin:'20px 0' }}>
+                <div className="cli-div-line"/>
+                <span style={{ fontSize:11.5, color:'#7a9ab8', fontWeight:500, whiteSpace:'nowrap' }}>
+                  o continúa con
+                </span>
+                <div className="cli-div-line"/>
+              </div>
+
+              <button type="button" className="cli-google">
+                <GoogleSVG/>
+                Continuar con Google
+              </button>
+
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:22 }}>
+                <p style={{ fontSize:13, color:'#4a6a80' }}>
+                  ¿Ya tienes cuenta?{' '}
+                  <a href="/login" className="cli-link">Inicia sesión</a>
+                </p>
+                <button type="submit" disabled={loading} className="cli-btn">
+                  {loading ? (
+                    <>
+                      <span style={{
+                        width:13, height:13, borderRadius:'50%',
+                        border:'2px solid rgba(255,255,255,0.3)',
+                        borderTopColor:'#fff', display:'inline-block',
+                        animation:'cliSpin 0.7s linear infinite',
+                      }}/>
+                      Creando…
+                    </>
+                  ) : <>Registrarse <ArrowRight size={14}/></>}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }

@@ -11,18 +11,16 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-// ✅ Dashboard para usuarios autenticados
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        // TODO: Crear dashboard real cuando sea necesario
-        return Inertia::render('Home', [
-            'canRegister' => Features::enabled(Features::registration()),
-        ]);
-    })->name('dashboard');
-});
+// ✅ Preview temporal de dashboards (sin auth ni roles)
+Route::get('/dashboard/carer', function () {
+    return Inertia::render('dashboard/carer/dashboard');
+})->name('dashboard.carer.preview');
+
+Route::get('/dashboard/customer', function () {
+    return Inertia::render('dashboard/customer/dashboard');
+})->name('dashboard.customer.preview');
 
 // ✅ Registros personalizados
-// ✅ Registros sin controlador
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return Inertia::render('auth/login');

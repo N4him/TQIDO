@@ -14,16 +14,27 @@ createInertiaApp({
     resolve: (name) => {
         const parts = name.split('/');
 
-        // Si tiene formato "feature/Page" → busca en features
-        if (parts.length === 2) {
-            const [feature, page] = parts;
+        // Soporta:
+        // auth/login -> ./features/auth/pages/login.tsx
+        // dashboard/carer/dashboard -> ./features/dashboard/carer/pages/dashboard.tsx
+        // dashboard/customer/dashboard -> ./features/dashboard/customer/pages/dashboard.tsx
+        if (parts.length >= 2) {
+            const [feature, ...rest] = parts;
+
+            const page = rest[rest.length - 1];
+            const subPath = rest.slice(0, -1).join('/');
+
+            const path = subPath
+                ? `./features/${feature}/${subPath}/pages/${page}.tsx`
+                : `./features/${feature}/pages/${page}.tsx`;
+
             return resolvePageComponent(
-                `./features/${feature}/pages/${page}.tsx`,
-                import.meta.glob('./features/**/pages/*.tsx'),
+                path,
+                import.meta.glob('./features/**/*.tsx'),
             );
         }
 
-        // Si es solo nombre → busca en pages raíz
+        // Página raíz
         return resolvePageComponent(
             `./pages/${name}.tsx`,
             import.meta.glob('./pages/**/*.tsx'),
