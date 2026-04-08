@@ -10,7 +10,14 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+// ✅ Preview temporal de perfiles (sin auth ni roles)
+Route::get('/profile/carer', function () {
+    return Inertia::render('profile/carer/carer');
+})->name('profile.carer.preview');
 
+Route::get('/profile/customer', function () {
+    return Inertia::render('profile/costumer/costumer');
+})->name('profile.customer.preview');
 // ✅ Preview temporal de dashboards (sin auth ni roles)
 Route::get('/dashboard/carer', function () {
     return Inertia::render('dashboard/carer/dashboard');
