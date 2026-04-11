@@ -18,7 +18,12 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
-            $table->string('google_id')->nullable();
+            $table->string('role')->default('user');
+            $table->string('provider')->nullable();
+            $table->string('provider_id')->nullable();
+            $table->string('specialty')->nullable();
+            $table->boolean('terms')->default(false);
+            $table->boolean('privacy')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

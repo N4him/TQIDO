@@ -85,6 +85,8 @@ const GoogleSVG = () => (
 export default function RegisterCliente() {
   const [form, setForm] = useState({
     name:'', email:'', phone:'',
+    role:'customer',
+    specialty:'Cliente',
     password:'', password_confirmation:'',
     terms:false, privacy:false,
   });
@@ -92,14 +94,58 @@ export default function RegisterCliente() {
   const [showCpw, setShowCpw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [ready,   setReady]   = useState(false);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
 
   useEffect(() => { const t = setTimeout(() => setReady(true), 60); return () => clearTimeout(t); }, []);
 
   const set = (k: string, v: string | boolean) => setForm(p => ({ ...p, [k]: v }));
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => setLoading(false), 1800);
+    setErrors({});
+
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+      const payload = new URLSearchParams();
+      payload.append('_token', csrfToken);
+      payload.append('name', form.name);
+      payload.append('email', form.email);
+      payload.append('phone', form.phone);
+      payload.append('role', form.role);
+      payload.append('specialty', form.specialty);
+      payload.append('password', form.password);
+      payload.append('password_confirmation', form.password_confirmation);
+      if (form.terms) payload.append('terms', '1');
+      if (form.privacy) payload.append('privacy', '1');
+
+      const response = await fetch('/register', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: payload,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.errors) {
+          setErrors(data.errors);
+        } else {
+          setErrors({ general: [data.message || 'Hubo un error inesperado.'] });
+        }
+        return;
+      }
+
+      window.location.assign(data.redirect_url || '/profile/customer');
+    } catch (error) {
+      console.error('Error de red:', error);
+      setErrors({ general: ['Hubo un problema con la conexión. Inténtalo de nuevo más tarde.'] });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -328,6 +374,7 @@ export default function RegisterCliente() {
                   <input className="cli-input" type="text" placeholder="María García López"
                     autoComplete="name" value={form.name}
                     onChange={e => set('name', e.target.value)}/>
+                  {errors.name && <p style={{ color:'red', fontSize:'12px' }}>{errors.name.join(', ')}</p>}
                 </div>
 
                 <div>
@@ -335,6 +382,7 @@ export default function RegisterCliente() {
                   <input className="cli-input" type="email" placeholder="correo@ejemplo.com"
                     autoComplete="email" value={form.email}
                     onChange={e => set('email', e.target.value)}/>
+                  {errors.email && <p style={{ color:'red', fontSize:'12px' }}>{errors.email.join(', ')}</p>}
                 </div>
 
                 <div>
@@ -345,6 +393,7 @@ export default function RegisterCliente() {
                       placeholder="300 123 4567" autoComplete="tel"
                       value={form.phone} onChange={e => set('phone', e.target.value)}/>
                   </div>
+                  {errors.phone && <p style={{ color:'red', fontSize:'12px' }}>{errors.phone.join(', ')}</p>}
                 </div>
 
                 <div style={{ display:'flex', gap:12 }}>
@@ -359,6 +408,7 @@ export default function RegisterCliente() {
                         {showPw ? <EyeOff size={15}/> : <Eye size={15}/>}
                       </button>
                     </div>
+                    {errors.password && <p style={{ color:'red', fontSize:'12px' }}>{errors.password.join(', ')}</p>}
                     <StrengthBars password={form.password}/>
                   </div>
                   <div style={{ flex:1 }}>
@@ -372,6 +422,7 @@ export default function RegisterCliente() {
                         {showCpw ? <EyeOff size={15}/> : <Eye size={15}/>}
                       </button>
                     </div>
+                    {errors.password_confirmation && <p style={{ color:'red', fontSize:'12px' }}>{errors.password_confirmation.join(', ')}</p>}
                     {form.password_confirmation && (
                       <p style={{
                         fontSize:10.5, marginTop:6, fontWeight:500,
@@ -390,10 +441,17 @@ export default function RegisterCliente() {
                     {' '}y la{' '}
                     <a href="/privacy" target="_blank" className="cli-link">Política de Privacidad</a>
                   </Checkbox>
+                  {errors.terms && <p style={{ color:'red', fontSize:'12px' }}>{errors.terms.join(', ')}</p>}
                   <Checkbox checked={form.privacy} onChange={v => set('privacy', v)}>
                     Consiento el tratamiento de mis datos para la gestión de la plataforma
                   </Checkbox>
+                  {errors.privacy && <p style={{ color:'red', fontSize:'12px' }}>{errors.privacy.join(', ')}</p>}
                 </div>
+                {errors.general && (
+                  <p style={{ color:'red', fontSize:'12px', marginTop:'10px' }}>
+                    {errors.general.join(', ')}
+                  </p>
+                )}
               </div>
 
               <div style={{ display:'flex', alignItems:'center', gap:12, margin:'20px 0' }}>

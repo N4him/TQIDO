@@ -95,6 +95,7 @@ const GoogleSVG = () => (
 export default function RegisterCuidador() {
   const [form, setForm] = useState({
     name:'', email:'', phone:'', specialty:'',
+    role:'carer',
     password:'', password_confirmation:'',
     terms:false, privacy:false,
   });
@@ -106,11 +107,60 @@ export default function RegisterCuidador() {
   useEffect(() => { const t = setTimeout(() => setReady(true), 60); return () => clearTimeout(t); }, []);
 
   const set = (k: string, v: string | boolean) => setForm(p => ({ ...p, [k]: v }));
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => setLoading(false), 1800);
+    setErrors({}); // Reiniciar errores antes de enviar
+
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+      const payload = new URLSearchParams();
+      payload.append('_token', csrfToken);
+      payload.append('name', form.name);
+      payload.append('email', form.email);
+      payload.append('phone', form.phone);
+      payload.append('role', form.role);
+      payload.append('specialty', form.specialty);
+      payload.append('password', form.password);
+      payload.append('password_confirmation', form.password_confirmation);
+      if (form.terms) payload.append('terms', '1');
+      if (form.privacy) payload.append('privacy', '1');
+
+      const response = await fetch('/register', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: payload,
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('Error en el registro:', errorData);
+        console.log('Error en el registro:', errorData.errors);
+        if (errorData.errors) {
+          setErrors(errorData.errors); // Asignar errores específicos
+        } else {
+          setErrors({ general: [errorData.message || 'Hubo un error inesperado.'] });
+        }
+      } else {
+        const data = await response.json();
+        if (data.redirect_url) {
+          window.location.assign(data.redirect_url);
+          return;
+        }
+        alert('Registro exitoso. ¡Bienvenido!');
+      }
+    } catch (error) {
+      console.error('Error de red:', error);
+      setErrors({ general: ['Hubo un problema con la conexión. Inténtalo de nuevo más tarde.'] });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
 
   return (
     <>
@@ -355,6 +405,7 @@ export default function RegisterCuidador() {
                   <input className="cud-input" type="text" placeholder="Carlos Martínez Ruiz"
                     autoComplete="name" value={form.name}
                     onChange={e => set('name', e.target.value)}/>
+                  {errors.name && <p style={{ color: 'red', fontSize: '12px' }}>{errors.name.join(', ')}</p>}
                 </div>
 
                 <div>
@@ -362,6 +413,7 @@ export default function RegisterCuidador() {
                   <input className="cud-input" type="email" placeholder="correo@ejemplo.com"
                     autoComplete="email" value={form.email}
                     onChange={e => set('email', e.target.value)}/>
+                  {errors.email && <p style={{ color: 'red', fontSize: '12px' }}>{errors.email.join(', ')}</p>}
                 </div>
 
                 <div>
@@ -372,6 +424,7 @@ export default function RegisterCuidador() {
                       placeholder="300 123 4567" autoComplete="tel"
                       value={form.phone} onChange={e => set('phone', e.target.value)}/>
                   </div>
+                  {errors.phone && <p style={{ color: 'red', fontSize: '12px' }}>{errors.phone.join(', ')}</p>}
                 </div>
 
                 <div>
@@ -381,6 +434,7 @@ export default function RegisterCuidador() {
                     <option value="">Selecciona tu especialidad...</option>
                     {SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
+                  {errors.specialty && <p style={{ color: 'red', fontSize: '12px' }}>{errors.specialty.join(', ')}</p>}
                 </div>
 
                 <div style={{ display:'flex', gap:12 }}>
@@ -395,6 +449,7 @@ export default function RegisterCuidador() {
                         {showPw ? <EyeOff size={15}/> : <Eye size={15}/>}
                       </button>
                     </div>
+                    {errors.password && <p style={{ color: 'red', fontSize: '12px' }}>{errors.password.join(', ')}</p>}
                     <StrengthBars password={form.password}/>
                   </div>
                   <div style={{ flex:1 }}>
@@ -408,6 +463,7 @@ export default function RegisterCuidador() {
                         {showCpw ? <EyeOff size={15}/> : <Eye size={15}/>}
                       </button>
                     </div>
+                    {errors.password_confirmation && <p style={{ color: 'red', fontSize: '12px' }}>{errors.password_confirmation.join(', ')}</p>}
                     {form.password_confirmation && (
                       <p style={{
                         fontSize:10.5, marginTop:6, fontWeight:500,
@@ -426,42 +482,48 @@ export default function RegisterCuidador() {
                     {' '}y la{' '}
                     <a href="/privacy" target="_blank" className="cud-link">Política de Privacidad</a>
                   </Checkbox>
+                  {errors.terms && <p style={{ color: 'red', fontSize: '12px' }}>{errors.terms.join(', ')}</p>}
                   <Checkbox checked={form.privacy} onChange={v => set('privacy', v)}>
                     Consiento el tratamiento de mis datos para la gestión de la plataforma
                   </Checkbox>
+                  {errors.privacy && <p style={{ color: 'red', fontSize: '12px' }}>{errors.privacy.join(', ')}</p>}
                 </div>
+
+                {errors.general && (
+                  <p style={{ color: 'red', fontSize: '12px', marginTop: '10px' }}>
+                    {errors.general.join(', ')}
+                  </p>
+                )}
               </div>
 
-              <div style={{ display:'flex', alignItems:'center', gap:12, margin:'20px 0' }}>
-                <div className="cud-div-line"/>
-                <span style={{ fontSize:11.5, color:'#96c0d8', fontWeight:500, whiteSpace:'nowrap' }}>
-                  o continúa con
-                </span>
-                <div className="cud-div-line"/>
-              </div>
-
-              <button type="button" className="cud-google">
-                <GoogleSVG/>
-                Continuar con Google
-              </button>
-
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:22 }}>
-                <p style={{ fontSize:13, color:'#4a6a80' }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop: 22 }}>
+                <p style={{ fontSize: 13, color: '#4a6a80' }}>
                   ¿Ya tienes cuenta?{' '}
-                  <a href="/login" className="cud-link">Inicia sesión</a>
+                  <a href="/login" className="cud-link">
+                    Inicia sesión
+                  </a>
                 </p>
                 <button type="submit" disabled={loading} className="cud-btn">
                   {loading ? (
                     <>
-                      <span style={{
-                        width:13, height:13, borderRadius:'50%',
-                        border:'2px solid rgba(255,255,255,0.3)',
-                        borderTopColor:'#fff', display:'inline-block',
-                        animation:'cudSpin 0.7s linear infinite',
-                      }}/>
+                      <span
+                        style={{
+                          width: 13,
+                          height: 13,
+                          borderRadius: '50%',
+                          border: '2px solid rgba(255,255,255,0.3)',
+                          borderTopColor: '#fff',
+                          display: 'inline-block',
+                          animation: 'cudSpin 0.7s linear infinite',
+                        }}
+                      />
                       Creando…
                     </>
-                  ) : <>Registrarse <ArrowRight size={14}/></>}
+                  ) : (
+                    <>
+                      Registrarse <ArrowRight size={14} />
+                    </>
+                  )}
                 </button>
               </div>
             </form>

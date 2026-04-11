@@ -22,6 +22,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'provider',
+        'provider_id',
+        'role',
+        'terms',
+        'privacy',
     ];
 
     /**
@@ -48,5 +54,10 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
     }
 }

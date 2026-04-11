@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -29,15 +28,8 @@ class FortifyServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureRateLimiting();
-
-        // Fortify ya tiene esto o similar — aquí defines qué TSX renderiza
-        Fortify::registerView(function () {
-            return Inertia::render('Auth/Register'); // 👈 tu Register.tsx normal
-        });
-
-        Fortify::loginView(function () {
-            return Inertia::render('Auth/Login');
-        });
+        $this->configureActions();
+        $this->configureViews();
     }
 
     /**
@@ -46,7 +38,6 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureActions(): void
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
-        Fortify::createUsersUsing(CreateNewUser::class);
     }
 
     /**
@@ -72,8 +63,6 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::verifyEmailView(fn (Request $request) => Inertia::render('auth/verify-email', [
             'status' => $request->session()->get('status'),
         ]));
-
-        Fortify::registerView(fn () => Inertia::render('auth/register'));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 
