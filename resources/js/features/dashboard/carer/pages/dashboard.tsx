@@ -4,7 +4,7 @@ import CarerLayout from '@/features/layouts/carer_layout';
 const css = `
 /* ═══════════════════════ HERO ═══════════════════════ */
 .hero {
-  background:var(--card); border:1px solid var(--t08);
+  background:#EBF6FD; border:1px solid var(--t08);
   border-radius:var(--r-xl); padding:28px 32px;
   display:grid; grid-template-columns:1fr auto;
   gap:24px; align-items:center;
@@ -64,7 +64,7 @@ const css = `
 .bottom-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
 
 /* ═══════════════════════ PRÓXIMO SERVICIO ═══════════════════════ */
-.next-card { background:var(--card); border:1px solid var(--t08); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--sh-card); }
+.next-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--sh-card); }
 .next-header { background:linear-gradient(135deg, var(--blue), var(--blue-lt)); padding:22px 26px 18px; position:relative; overflow:hidden; }
 .next-header::after { content:''; position:absolute; top:-40px; right:-20px; width:180px; height:180px; background:radial-gradient(circle, rgba(255,255,255,0.10), transparent 65%); }
 .next-eyebrow { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.65); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
@@ -84,7 +84,7 @@ const css = `
 .next-actions { display:flex; gap:8px; }
 
 /* ═══════════════════════ SOLICITUDES ═══════════════════════ */
-.requests-card { background:var(--card); border:1px solid var(--t08); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--sh-card); }
+.requests-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--sh-card); }
 .requests-head { padding:18px 20px 14px; border-bottom:1px solid var(--t08); display:flex; align-items:center; justify-content:space-between; }
 .requests-title { font-family:var(--ff-d); font-size:17px; color:var(--t100); font-weight:300; }
 .requests-badge { background:var(--amber); color:var(--bg); font-size:9.5px; font-weight:700; padding:2px 9px; border-radius:var(--r-full); }
@@ -107,7 +107,7 @@ const css = `
 .btn-decline:hover { background:rgba(239,68,68,0.22); }
 
 /* ═══════════════════════ AGENDA ═══════════════════════ */
-.agenda-card { background:var(--card); border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
+.agenda-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
 .week-row { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
 .day-col { text-align:center; }
 .day-name { font-size:9px; color:var(--t35); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:7px; }
@@ -133,7 +133,7 @@ const css = `
 .slot-badge.pending   { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(245,166,35,0.25); }
 
 /* ═══════════════════════ VALORACIONES ═══════════════════════ */
-.reviews-card { background:var(--card); border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
+.reviews-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
 .reviews-header { display:flex; align-items:center; gap:22px; margin-bottom:18px; }
 .review-score { font-family:var(--ff-d); font-size:54px; font-weight:300; color:var(--t100); line-height:1; }
 .review-score em { font-style:italic; color:var(--blue-lt); }
@@ -155,7 +155,7 @@ const css = `
 .rev-text { font-size:12px; color:var(--t55); line-height:1.6; font-weight:300; }
 
 /* ═══════════════════════ GANANCIAS ═══════════════════════ */
-.earnings-card { background:var(--card); border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
+.earnings-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
 .earn-total { display:flex; align-items:baseline; gap:5px; margin-bottom:4px; }
 .earn-currency { font-size:20px; color:var(--blue-ltr); }
 .earn-num { font-family:var(--ff-d); font-size:44px; font-weight:300; color:var(--blue-lt); line-height:1; }

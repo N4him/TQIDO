@@ -12,15 +12,16 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
-Route::middleware('auth')->group(function () {
-    Route::get('/profile/carer', function () {
-        return Inertia::render('profile/carer/carer');
-    })->name('profile.carer.preview');
 
-    Route::get('/profile/customer', function () {
-        return Inertia::render('profile/costumer/costumer');
-    })->name('profile.customer.preview');
-});
+// ✅ Perfiles públicos (sin auth)
+Route::get('/profile/carer', function () {
+    return Inertia::render('profile/carer/carer');
+})->name('profile.carer.preview');
+
+Route::get('/profile/customer', function () {
+    return Inertia::render('profile/costumer/costumer');
+})->name('profile.customer.preview');
+
 // ✅ Preview temporal de dashboards (sin auth ni roles)
 Route::get('/dashboard/carer', function () {
     return Inertia::render('dashboard/carer/dashboard');
@@ -50,6 +51,8 @@ Route::middleware('guest')->group(function () {
         return Inertia::render('auth/register_carer');
     })->name('register.carer');
 });
+
 Route::get('/auth/{provider}', [SocialController::class, 'redirect'])->name('api.social.redirect');
 Route::get('/auth/{provider}/callback', [SocialController::class, 'callback'])->name('api.social.callback');
+
 require __DIR__.'/settings.php';

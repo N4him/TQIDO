@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 /* ─────────────────────────────────────────────
-   DESIGN TOKENS & NAV CSS
-   Shared by every page that uses CarerLayout
+   DESIGN TOKENS & GLOBAL CSS
 ───────────────────────────────────────────── */
 export const layoutCss = `
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap');
@@ -39,11 +38,11 @@ export const layoutCss = `
   --warning: #F79009;
   --error:   #F04438;
 
-  --sh-xs: 0 1px 3px rgba(20,50,100,0.18);
-  --sh-sm: 0 2px 8px rgba(20,50,100,0.20), 0 1px 2px rgba(20,50,100,0.12);
-  --sh-md: 0 6px 16px rgba(20,50,100,0.22), 0 2px 4px rgba(20,50,100,0.10);
-  --sh-lg: 0 14px 32px rgba(20,50,100,0.26), 0 4px 8px rgba(20,50,100,0.12);
-  --sh-xl: 0 24px 48px rgba(20,50,100,0.30), 0 8px 16px rgba(20,50,100,0.14);
+  --sh-xs:   0 1px 3px rgba(20,50,100,0.18);
+  --sh-sm:   0 2px 8px rgba(20,50,100,0.20), 0 1px 2px rgba(20,50,100,0.12);
+  --sh-md:   0 6px 16px rgba(20,50,100,0.22), 0 2px 4px rgba(20,50,100,0.10);
+  --sh-lg:   0 14px 32px rgba(20,50,100,0.26), 0 4px 8px rgba(20,50,100,0.12);
+  --sh-xl:   0 24px 48px rgba(20,50,100,0.30), 0 8px 16px rgba(20,50,100,0.14);
   --sh-glow: 0 4px 20px rgba(26,74,144,0.50);
 
   --r4: 4px; --r8: 8px; --r12: 12px; --r16: 16px;
@@ -59,7 +58,7 @@ export const layoutCss = `
 
 html, body {
   min-height: 100%;
-  background: var(--dom);
+  background: #4aa2db; 
   font-family: var(--ff-ui);
   color: var(--on-dom);
   -webkit-font-smoothing: antialiased;
@@ -68,102 +67,134 @@ html, body {
 body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(122,176,240,0.45) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 90%, rgba(26,96,176,0.35) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 40% at 55% 50%, rgba(255,255,255,0.06) 0%, transparent 50%);
+  background:#4aa2db; }
+  
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-size: 28px 28px;
 }
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--dom-dk); }
 ::-webkit-scrollbar-thumb { background: var(--dom-lt); border-radius: 4px; }
 
-/* ── NAV ── */
+/* ══ NAV ══ */
 .nav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(58,120,204,0.72);
+  height: 80px;
+  padding: 0 var(--s8);
+  display: flex; align-items: center; justify-content: space-between;
+  background: #4aa2db; 
   backdrop-filter: blur(24px) saturate(1.6);
   -webkit-backdrop-filter: blur(24px) saturate(1.6);
   border-bottom: 1px solid var(--on-dom-20);
-  height: 60px; padding: 0 var(--s8);
-  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 0 rgba(255,255,255,.14) inset, 0 4px 20px rgba(26,74,144,.25);
 }
 
-.nav-logo { display: flex; align-items: center; gap: var(--s2); }
-.nav-logo-mark {
-  width: 32px; height: 32px; border-radius: var(--r8);
-  background: var(--on-dom); opacity: 0.95;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--sh-glow); flex-shrink: 0;
+/* ── Logo ── */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  user-select: none;
 }
-.nav-logo-mark svg { width: 16px; height: 16px; }
-.nav-logo-text { font-size: 16px; font-weight: 700; color: var(--on-dom); letter-spacing: -0.02em; }
-.nav-logo-text span { color: var(--on-dom-80); font-style: italic; }
 
-.nav-center { display: flex; align-items: center; gap: var(--s1); }
-.nav-link {
-  padding: 6px 14px; border-radius: var(--r8);
-  font-size: 13px; font-weight: 500; color: var(--on-dom-80);
-  cursor: pointer; transition: all 0.15s ease;
-  border: none; background: none; font-family: var(--ff-ui);
+/* ── Pills ── */
+.nav-center {
+  display: flex; align-items: center; gap: 3px;
+  background: var(--on-dom-08);
+  border: 1px solid var(--on-dom-20);
+  border-radius: var(--rF);
+  padding: 5px;
 }
-.nav-link:hover  { color: var(--on-dom); background: var(--on-dom-12); }
-.nav-link.active { color: var(--on-dom); background: var(--on-dom-20); }
 
-.nav-right { display: flex; align-items: center; gap: var(--s2); }
+.nav-pill {
+  padding: 9px 24px;
+  border-radius: var(--rF);
+  font-size: 14px; font-weight: 500;
+  color: var(--on-dom-60);
+  background: none; border: none;
+  font-family: var(--ff-ui); cursor: pointer;
+  transition: all .18s ease;
+}
+.nav-pill:hover  { color: var(--on-dom); background: var(--on-dom-12); }
+.nav-pill.active {
+  color: var(--dom-dk);
+  background: var(--on-dom);
+  font-weight: 700;
+  box-shadow: var(--sh-xs);
+}
 
-.icon-btn {
-  width: 36px; height: 36px; border-radius: var(--r8);
-  display: flex; align-items: center; justify-content: center;
+/* ── Right cluster ── */
+.nav-right { display: flex; align-items: center; gap: var(--s3); }
+
+.nav-notif {
+  width: 46px; height: 46px;
+  border-radius: var(--r8);
   background: var(--on-dom-12); border: 1px solid var(--on-dom-20);
-  cursor: pointer; transition: all 0.15s ease; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; cursor: pointer; position: relative;
+  transition: all .15s ease;
 }
-.icon-btn:hover { background: var(--on-dom-20); border-color: var(--on-dom-40); }
-.icon-btn-badge {
-  position: absolute; top: 5px; right: 5px;
-  width: 8px; height: 8px; border-radius: 50%;
+.nav-notif:hover { background: var(--on-dom-20); border-color: var(--on-dom-40); }
+.nav-notif-dot {
+  position: absolute; top: 7px; right: 7px;
+  width: 9px; height: 9px; border-radius: 50%;
   background: #fff176; border: 2px solid var(--dom-dk);
 }
 
-.nav-divider { width: 1px; height: 20px; background: var(--on-dom-20); margin: 0 var(--s1); }
+.nav-divider { width: 1px; height: 24px; background: var(--on-dom-20); margin: 0 var(--s1); }
 
-.nav-user {
-  display: flex; align-items: center; gap: var(--s2);
-  padding: 4px 10px 4px 12px; border-radius: var(--rF);
-  border: 1px solid rgba(255,255,255,0.30);
+/* ── Avatar trigger ── */
+.nav-avatar-trigger {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 2px solid var(--on-dom-40);
   background: var(--on-dom-12);
-  cursor: pointer; transition: all 0.15s ease;
-  position: relative; user-select: none;
-  backdrop-filter: blur(8px);
-}
-.nav-user:hover  { background: var(--on-dom-20); border-color: var(--on-dom-40); }
-.nav-user-meta   { display: flex; flex-direction: column; gap: 1px; }
-.nav-user-name   { font-size: 12px; font-weight: 600; color: var(--on-dom); line-height: 1; }
-.nav-user-loc    { font-size: 10px; color: var(--on-dom-60); line-height: 1; }
-.nav-avatar {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--on-dom);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; color: var(--dom-dk);
-  font-family: var(--ff-ui); flex-shrink: 0;
+  cursor: pointer;
+  transition: all .15s ease;
+  position: relative;
+  user-select: none;
+  flex-shrink: 0;
+}
+.nav-avatar-trigger:hover {
+  border-color: var(--on-dom-80);
+  background: var(--on-dom-20);
+  transform: scale(1.06);
+}
+.nav-avatar-trigger.open {
+  border-color: var(--on-dom);
+  background: var(--on-dom-20);
+  box-shadow: 0 0 0 3px var(--on-dom-20);
+}
+
+.nav-avatar {
+  width: 100%; height: 100%; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: var(--dom-dk);
+  background: var(--on-dom);
+  font-family: var(--ff-ui);
   box-shadow: var(--sh-xs);
 }
-.nav-chevron { color: var(--on-dom-60); font-size: 9px; transition: transform 0.2s; }
-.nav-user.open .nav-chevron { transform: rotate(180deg); }
 
-/* ── DROPDOWN ── */
+/* ══ DROPDOWN ══ */
 .dropdown {
-  position: absolute; top: calc(100% + 10px); right: 0;
-  width: 264px; background: var(--surf);
+  position: absolute; top: calc(100% + 12px); right: 0;
+  width: 272px;
+  background: var(--surf);
   border: 1px solid var(--surf-border);
   border-radius: var(--r16); overflow: hidden;
   box-shadow: var(--sh-xl);
-  opacity: 0; transform: translateY(-8px) scale(0.97);
+  opacity: 0; transform: translateY(-10px) scale(0.96);
   pointer-events: none;
-  transition: all 0.2s cubic-bezier(0.34,1.2,0.64,1);
+  transition: opacity .2s cubic-bezier(0.34,1.2,0.64,1),
+              transform .2s cubic-bezier(0.34,1.2,0.64,1);
   transform-origin: top right; z-index: 200;
 }
-.dropdown.open { opacity: 1; transform: none; pointer-events: all; }
+.dropdown.open {
+  opacity: 1; transform: translateY(0) scale(1);
+  pointer-events: all;
+}
 
 .dd-user-block {
   padding: var(--s4);
@@ -193,7 +224,7 @@ body::before {
 .dd-progress-fill  {
   height: 100%; border-radius: var(--rF);
   background: linear-gradient(90deg, var(--dom-dk), var(--dom));
-  transition: width 0.9s cubic-bezier(0.34,1.2,0.64,1);
+  transition: width .9s cubic-bezier(0.34,1.2,0.64,1);
 }
 .dd-progress-hint        { font-size: 10px; color: var(--dom-deep); margin-top: var(--s1); }
 .dd-progress-hint strong { font-weight: 600; }
@@ -203,7 +234,7 @@ body::before {
   display: flex; align-items: center; gap: var(--s2);
   padding: var(--s2) var(--s3); border-radius: var(--r8);
   font-size: 13px; font-weight: 500; color: var(--muted);
-  cursor: pointer; transition: all 0.12s ease;
+  cursor: pointer; transition: all .12s ease;
 }
 .dd-item:hover        { background: var(--surf-2); color: var(--ink); }
 .dd-item.danger       { color: var(--error); }
@@ -216,14 +247,70 @@ body::before {
 }
 .dd-sep { height: 1px; background: var(--surf-3); margin: var(--s1) var(--s2); }
 
-/* ── PAGE WRAPPER ── */
-.layout-page { position: relative; z-index: 1; }
+/* ══ PAGE ══ */
+.layout-page {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px var(--s8) 72px;
+  position: relative; z-index: 1;
+  min-height: calc(100vh - 80px);
+}
 
-/* ── RESPONSIVE ── */
-@media(max-width:640px) {
-  .nav { padding: 0 var(--s4); }
+/* ══ SHARED UTILITIES ══ */
+.sec-title {
+  font-family: var(--ff-d);
+  font-size: 11px; font-weight: 400;
+  color: var(--on-dom-60);
+  letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.sec-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--on-dom-20) 0%, transparent 100%);
+}
+
+.btn-primary {
+  flex: 1; padding: 12px 20px;
+  border-radius: var(--r8);
+  background: var(--on-dom); color: var(--dom-dk);
+  font-family: var(--ff-ui); font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer;
+  transition: all .2s ease;
+  box-shadow: var(--sh-sm);
+}
+.btn-primary:hover {
+  background: var(--surf-2);
+  transform: translateY(-2px);
+  box-shadow: var(--sh-md);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  padding: 12px 16px; border-radius: var(--r8);
+  background: var(--on-dom-12); color: var(--on-dom-80);
+  font-family: var(--ff-ui); font-size: 13px; font-weight: 500;
+  border: 1px solid var(--on-dom-20);
+  cursor: pointer; transition: all .18s;
+  backdrop-filter: blur(8px);
+}
+.btn-secondary:hover {
+  background: var(--on-dom-20);
+  border-color: var(--on-dom-40);
+  color: var(--on-dom);
+}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 640px) {
+  .nav { padding: 0 var(--s4); height: 68px; }
   .nav-center { display: none; }
-  .nav-user-meta { display: none; }
+  .nav-notif  { width: 40px; height: 40px; font-size: 17px; }
+  .nav-avatar-trigger { width: 40px; height: 40px; }
+  .layout-page { padding: 20px var(--s4) 56px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 `;
 
@@ -257,33 +344,24 @@ export interface CarerLayoutUser {
 }
 
 export interface CarerLayoutProps {
-  /** Page content */
   children: React.ReactNode;
-  /** Authenticated user */
   user: CarerLayoutUser;
-  /** Nav links to render in the center */
   navLinks: NavLink[];
-  /** Notification count — shows badge dot when > 0 */
   notifCount?: number;
-  /** Dropdown menu items (below the progress bar) */
   dropdownItems?: DropdownItem[];
-  /** Profile-completion steps for the dropdown progress widget */
   profileSteps?: ProfileStep[];
-  /** Favourites count shown in dropdown */
-  favsCount?: number;
 }
 
 /* ─────────────────────────────────────────────
    COMPONENT
 ───────────────────────────────────────────── */
-export default function CarerLayout({
+export default function CustomerLayout({
   children,
   user,
   navLinks,
   notifCount = 0,
   dropdownItems = [],
   profileSteps = [],
-  favsCount = 0,
 }: CarerLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -298,34 +376,31 @@ export default function CarerLayout({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const pct      = profileSteps.length
-    ? Math.round(profileSteps.filter(s => s.done).length / profileSteps.length * 100)
+  const pct = profileSteps.length
+    ? Math.round(profileSteps.filter((s) => s.done).length / profileSteps.length * 100)
     : 0;
-  const nextStep = profileSteps.find(s => !s.done);
+  const nextStep = profileSteps.find((s) => !s.done);
 
   return (
     <>
       <style>{layoutCss}</style>
 
-      {/* ── TOP NAV ── */}
       <nav className="nav">
         {/* Logo */}
         <div className="nav-logo">
-          <div className="nav-logo-mark">
-            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 2C5.79 2 4 3.79 4 6c0 1.48.81 2.77 2 3.46V12h4V9.46c1.19-.69 2-1.98 2-3.46 0-2.21-1.79-4-4-4z" fill="white" opacity="0.9"/>
-              <path d="M6 12h4v1.5a.5.5 0 01-.5.5h-3a.5.5 0 01-.5-.5V12z" fill="white" opacity="0.6"/>
-            </svg>
-          </div>
-          <div className="nav-logo-text">TQ<span>ido</span></div>
+          <img
+            src="/assets/heart-costumer.svg"
+            alt="TQido"
+            style={{ height: '62px', width: 'auto', display: 'block' }}
+          />
         </div>
 
-        {/* Center links */}
+        {/* Center nav pills */}
         <div className="nav-center">
-          {navLinks.map(link => (
+          {navLinks.map((link) => (
             <button
               key={link.label}
-              className={`nav-link${link.active ? ' active' : ''}`}
+              className={`nav-pill${link.active ? ' active' : ''}`}
               onClick={link.onClick}
             >
               {link.label}
@@ -335,28 +410,25 @@ export default function CarerLayout({
 
         {/* Right cluster */}
         <div className="nav-right">
-          <button className="icon-btn" title="Notificaciones" style={{ fontSize: 14 }}>
+          {/* Notificaciones */}
+          <button className="nav-notif" title="Notificaciones">
             🔔
-            {notifCount > 0 && <div className="icon-btn-badge" />}
+            {notifCount > 0 && <div className="nav-notif-dot" />}
           </button>
 
-          <div className="nav-divider" />
 
-          {/* User pill + dropdown */}
+
+          {/* Avatar trigger */}
           <div
-            className={`nav-user${menuOpen ? ' open' : ''}`}
             ref={menuRef}
-            onClick={() => setMenuOpen(o => !o)}
+            className={`nav-avatar-trigger${menuOpen ? ' open' : ''}`}
+            onClick={() => setMenuOpen((o) => !o)}
           >
-            <div className="nav-user-meta">
-              <div className="nav-user-name">{user.name.split(' ')[0]}</div>
-              <div className="nav-user-loc">📍 {user.city}</div>
-            </div>
             <div className="nav-avatar">{user.initials}</div>
-            <span className="nav-chevron">▼</span>
 
+            {/* Dropdown */}
             <div className={`dropdown${menuOpen ? ' open' : ''}`}>
-              {/* User block */}
+              {/* Bloque de usuario */}
               <div className="dd-user-block">
                 <div className="dd-user-avatar">{user.initials}</div>
                 <div>
@@ -365,7 +437,7 @@ export default function CarerLayout({
                 </div>
               </div>
 
-              {/* Progress bar */}
+              {/* Progreso del perfil */}
               {profileSteps.length > 0 && (
                 <div className="dd-progress">
                   <div className="dd-progress-head">
@@ -383,14 +455,18 @@ export default function CarerLayout({
                 </div>
               )}
 
-              {/* Menu items */}
+              {/* Items del menú */}
               <div className="dd-section">
                 {dropdownItems.map((item, i) => (
                   <div key={i}>
                     {item.danger && i > 0 && <div className="dd-sep" />}
                     <div
                       className={`dd-item${item.danger ? ' danger' : ''}`}
-                      onClick={item.onClick}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpen(false);
+                        item.onClick?.();
+                      }}
                     >
                       <span className="dd-icon">{item.icon}</span>
                       {item.label}
@@ -406,7 +482,7 @@ export default function CarerLayout({
         </div>
       </nav>
 
-      {/* ── PAGE ── */}
+      {/* PAGE */}
       <div className="layout-page">{children}</div>
     </>
   );
