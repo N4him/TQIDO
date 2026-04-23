@@ -432,7 +432,7 @@ body::after {
    PAGE
 ══════════════════════════════════════════════ */
 .page {
-  max-width: 1160px;
+  max-width: 1920px;
   margin: 0 auto;
   padding: 32px 32px 72px;
   position: relative;

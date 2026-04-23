@@ -31,6 +31,10 @@ Route::get('/dashboard/customer', function () {
     return Inertia::render('dashboard/customer/dashboard');
 })->name('dashboard.customer.preview');
 
+Route::get('/profile/public', function () {
+    return Inertia::render('profile_public/profile_carer');
+})->name('profile.public');
+
 // ✅ Registros personalizados
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
@@ -45,12 +49,14 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/register/customer', function () {
         return Inertia::render('auth/register_customer');
-    })->name('register.customer');
+    })->name('register.customer');;
 
     Route::get('/register/carer', function () {
         return Inertia::render('auth/register_carer');
     })->name('register.carer');
 });
+
+
 
 Route::get('/auth/{provider}', [SocialController::class, 'redirect'])->name('api.social.redirect');
 Route::get('/auth/{provider}/callback', [SocialController::class, 'callback'])->name('api.social.callback');
