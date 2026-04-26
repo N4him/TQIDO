@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { router } from '@inertiajs/react';
 import type { NavLink, DropdownItem, ProfileStep, CarerLayoutUser } from '@/features/layouts/customer_layout';
 import CarerLayout from '@/features/layouts/customer_layout';
 
@@ -380,7 +381,7 @@ export default function TQidoHome() {
     { icon:'❤️', label:'Favoritos',    badge: Math.max(favs.size, 4) },
     { icon:'💳', label:'Métodos de pago' },
     { icon:'⚙️', label:'Ajustes' },
-    { icon:'↩',  label:'Cerrar sesión', danger: true },
+    { icon:'↩',  label:'Cerrar sesión', danger: true, onClick: () => router.post('/logout') },
   ];
 
   return (

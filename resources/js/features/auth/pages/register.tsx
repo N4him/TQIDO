@@ -57,6 +57,13 @@ function FeatureList({ features }: FeatureListProps) {
 }
 
 export default function Register() {
+  const searchParams = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search)
+    : null;
+  const isSocialSignup = searchParams?.get('social_signup') === '1';
+  const resolveTarget = (role: 'carer' | 'customer') =>
+    isSocialSignup ? `/register/social/${role}` : `/register/${role}`;
+
   return (
     <>
       {/* NAV */}
@@ -73,10 +80,34 @@ export default function Register() {
           <img src="/assets/LOGO SPLIT.png" alt="TQido" className="rg-logo-img" />
         </div>
 
+        {isSocialSignup && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 88,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 20,
+              width: 'min(720px, calc(100% - 32px))',
+              padding: '12px 16px',
+              borderRadius: 16,
+              border: '1px solid rgba(46,111,186,0.18)',
+              background: 'rgba(255,255,255,0.96)',
+              boxShadow: '0 16px 40px rgba(13,35,66,0.12)',
+              color: '#0b2242',
+              fontSize: 13,
+              lineHeight: 1.6,
+              textAlign: 'center',
+            }}
+          >
+            No encontramos una cuenta con ese Google. Elige si quieres continuar como cuidador/a o como familia y la creamos de una vez.
+          </div>
+        )}
+
         {/* ── LEFT PANEL — CUIDADOR ── */}
         <div
           className="rg-side rg-side-l"
-          onClick={() => { window.location.href = '/register/carer'; }}
+          onClick={() => { window.location.href = resolveTarget('carer'); }}
         >
           <div className="rg-bg-img" />
           <div className="rg-bg-overlay" />
@@ -95,7 +126,7 @@ export default function Register() {
             <FeatureList features={CARER_FEATURES} />
             <div className="rg-cta-wrap">
               <Link
-                href="/register/carer"
+                href={resolveTarget('carer')}
                 className="rg-cta rg-cta-l"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -109,7 +140,7 @@ export default function Register() {
         {/* ── RIGHT PANEL — CLIENTE ── */}
         <div
           className="rg-side rg-side-r"
-          onClick={() => { window.location.href = '/register/customer'; }}
+          onClick={() => { window.location.href = resolveTarget('customer'); }}
         >
           <div className="rg-bg-img" />
           <div className="rg-bg-overlay" />
@@ -128,7 +159,7 @@ export default function Register() {
             <FeatureList features={CUSTOMER_FEATURES} />
             <div className="rg-cta-wrap">
               <Link
-                href="/register/customer"
+                href={resolveTarget('customer')}
                 className="rg-cta rg-cta-r"
                 onClick={(e) => e.stopPropagation()}
               >

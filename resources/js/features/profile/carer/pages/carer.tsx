@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import CarerLayout from '@/features/layouts/carer_layout';
 import type { AddressProfile, AvailabilitySlot, ProfileCompletion, ProfileService, SharedData, UserProfile } from '@/types';
 
@@ -515,6 +515,21 @@ select.field-input {
   cursor: pointer;
 }
 
+input[type="date"].field-input {
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+input[type="date"].field-input::-webkit-calendar-picker-indicator {
+  opacity: .9;
+  cursor: pointer;
+}
+
+input[type="date"].field-input[readonly]::-webkit-calendar-picker-indicator {
+  opacity: .45;
+  cursor: default;
+}
+
 /* ══ LIST ITEMS ══════════════════════════════════════════ */
 .item-list { display: flex; flex-direction: column; gap: 12px; }
 
@@ -815,7 +830,7 @@ select.field-input {
 `;
 
 /* ══ CONSTANTS ════════════════════════════════════════════ */
-const TABS = ['personal', 'servicios', 'disponibilidad', 'documentos', 'direcciones', 'pagos'] as const;
+const TABS = ['personal', 'servicios', 'disponibilidad', 'documentos', 'pagos'] as const;
 type Tab = typeof TABS[number];
 
 const TAB_CONFIG: Record<Tab, { label: string; icon: string }> = {
@@ -823,7 +838,6 @@ const TAB_CONFIG: Record<Tab, { label: string; icon: string }> = {
   servicios:      { label: 'Servicios',   icon: '⚕️' },
   disponibilidad: { label: 'Horarios',    icon: '📅' },
   documentos:     { label: 'Documentos',  icon: '📋' },
-  direcciones:    { label: 'Direcciones', icon: '📍' },
   pagos:          { label: 'Pago',        icon: '💳' },
 };
 
@@ -931,7 +945,7 @@ export default function TQidoClientProfile() {
 
   const [savedProfile,        setSavedProfile]        = useState<UserProfile | null>(initialProfile);
   const [completion,          setCompletion]           = useState<ProfileCompletion | null>((user?.profile_completion ?? null) as ProfileCompletion | null);
-  const [profileForm,         setProfileForm]          = useState({ user_id: Number(user?.id ?? 0), fecha_nacimiento: initialProfile?.fecha_nacimiento ?? '', ciudad: initialProfile?.ciudad ?? '', direccion: initialProfile?.direccion ?? '' });
+  const [profileForm,         setProfileForm]          = useState({ user_id: Number(user?.id ?? 0), phone: user?.phone ?? '', fecha_nacimiento: initialProfile?.fecha_nacimiento ?? '', ciudad: initialProfile?.ciudad ?? '', direccion: initialProfile?.direccion ?? '' });
   const [addresses,           setAddresses]            = useState<EditableAddress[]>(normalizeAddresses(initialProfile?.direcciones));
   const [availabilitySlots,   setAvailabilitySlots]    = useState<EditableAvailabilitySlot[]>(normalizeAvailabilitySlots(initialProfile?.disponibilidades));
   const [serviceDescription,  setServiceDescription]   = useState(initialProfile?.descripcion_general_servicio ?? '');
@@ -949,7 +963,7 @@ export default function TQidoClientProfile() {
   const nextMissingField = completion?.missing?.[0] ?? null;
 
   const resetForms = () => {
-    setProfileForm({ user_id: Number(user?.id ?? 0), fecha_nacimiento: savedProfile?.fecha_nacimiento ?? '', ciudad: savedProfile?.ciudad ?? '', direccion: savedProfile?.direccion ?? '' });
+    setProfileForm({ user_id: Number(user?.id ?? 0), phone: user?.phone ?? '', fecha_nacimiento: savedProfile?.fecha_nacimiento ?? '', ciudad: savedProfile?.ciudad ?? '', direccion: savedProfile?.direccion ?? '' });
     setAddresses(normalizeAddresses(savedProfile?.direcciones));
     setAvailabilitySlots(normalizeAvailabilitySlots(savedProfile?.disponibilidades));
     setServiceDescription(savedProfile?.descripcion_general_servicio ?? '');
@@ -985,7 +999,7 @@ export default function TQidoClientProfile() {
       const updated = (data.profile ?? null) as UserProfile | null;
       setSavedProfile(updated);
       setCompletion((data.profile_completion ?? null) as ProfileCompletion | null);
-      setProfileForm({ user_id: Number(user?.id ?? 0), fecha_nacimiento: updated?.fecha_nacimiento ?? '', ciudad: updated?.ciudad ?? '', direccion: updated?.direccion ?? '' });
+      setProfileForm((current) => ({ user_id: Number(user?.id ?? 0), phone: current.phone, fecha_nacimiento: updated?.fecha_nacimiento ?? current.fecha_nacimiento, ciudad: updated?.ciudad ?? current.ciudad, direccion: updated?.direccion ?? current.direccion }));
       setAddresses(normalizeAddresses(updated?.direcciones));
       setAvailabilitySlots(normalizeAvailabilitySlots(updated?.disponibilidades));
       setServiceDescription(updated?.descripcion_general_servicio ?? '');
@@ -1006,8 +1020,7 @@ export default function TQidoClientProfile() {
   };
 
   const handleLogout = () => {
-    // Add your logout logic here, e.g. router.post('/logout')
-    console.log('Logout');
+    router.post('/logout');
   };
 
   return (
@@ -1054,9 +1067,9 @@ export default function TQidoClientProfile() {
                 <div className="profile-meta">
                   {[
                     { icon: '✉️', label: 'Email',               value: user?.email ?? 'Sin correo' },
-                    { icon: '📞', label: 'Teléfono',            value: user?.phone ?? 'Sin teléfono' },
-                    { icon: '🎂', label: 'Nacimiento',          value: birthDate(savedProfile?.fecha_nacimiento) },
-                    { icon: '🏠', label: 'Dirección principal', value: addressText(primaryAddress(addresses)) || savedProfile?.direccion || 'Sin dirección' },
+                    { icon: '📞', label: 'Teléfono',            value: profileForm.phone || user?.phone || 'Sin teléfono' },
+                    { icon: '🎂', label: 'Nacimiento',          value: birthDate(profileForm.fecha_nacimiento || savedProfile?.fecha_nacimiento) },
+                    { icon: '🏠', label: 'Dirección principal', value: profileForm.direccion || addressText(primaryAddress(addresses)) || savedProfile?.direccion || 'Sin dirección' },
                   ].map((item) => (
                     <div className="meta-row" key={item.label}>
                       <div className="meta-icon">{item.icon}</div>
@@ -1071,7 +1084,7 @@ export default function TQidoClientProfile() {
                 <div className="sidebar-actions">
                   {editing ? (
                     <>
-                      <button className="btn-secondary" style={{ flex: 1 }} onClick={() => { resetForms(); setSaveError(''); setSaveOk(''); setEditing(false); }} disabled={saving}>
+                      <button className="btn-danger" style={{ flex: 1 }} onClick={() => { resetForms(); setSaveError(''); setSaveOk(''); setEditing(false); }} disabled={saving}>
                         Cancelar
                       </button>
                       <button className="btn-primary" style={{ flex: 1 }} onClick={saveProfile} disabled={saving}>
@@ -1092,7 +1105,7 @@ export default function TQidoClientProfile() {
 
               {/* Tabs */}
               <nav className="tab-nav">
-                {TABS.map((tab) => (
+                {TABS.filter((tab) => tab !== 'direcciones').map((tab) => (
                   <button key={tab} className={`tab-btn${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>
                     <span className="tab-icon">{TAB_CONFIG[tab].icon}</span>
                     <span className="tab-label">{TAB_CONFIG[tab].label}</span>
@@ -1104,7 +1117,6 @@ export default function TQidoClientProfile() {
               <div className="content-card">
                 <div className="card-header">
                   <span className="card-title">{TAB_CONFIG[activeTab].label}</span>
-                  {activeTab === 'direcciones'    && <span className="card-meta-badge">{addresses.length} guardadas</span>}
                   {activeTab === 'documentos'     && <span className="card-meta-badge">3 / 5 verificados</span>}
                   {activeTab === 'disponibilidad' && <span className="card-meta-badge">{availabilitySlots.length} bloques</span>}
                 </div>
@@ -1125,7 +1137,7 @@ export default function TQidoClientProfile() {
                         <div className="form-grid" style={{ marginTop: 14 }}>
                           <Field label="Nombre"><input className="field-input" value={(user?.name ?? '').split(' ')[0] ?? ''} readOnly /></Field>
                           <Field label="Apellidos"><input className="field-input" value={(user?.name ?? '').split(' ').slice(1).join(' ')} readOnly /></Field>
-                          <Field label="Teléfono"><input className="field-input" value={user?.phone ?? ''} readOnly /></Field>
+                          <Field label="Teléfono"><input className="field-input" value={profileForm.phone} onChange={(e) => setProfileForm((c) => ({ ...c, phone: e.target.value }))} readOnly={!editing} /></Field>
                           <Field label="Email"><input className="field-input" value={user?.email ?? ''} readOnly /></Field>
                         </div>
                       </div>
@@ -1133,7 +1145,7 @@ export default function TQidoClientProfile() {
                         <div className="section-divider"><span className="section-divider-label">Datos del perfil</span><div className="section-divider-line" /></div>
                         <div className="form-grid" style={{ marginTop: 14 }}>
                           <Field label="Fecha de nacimiento">
-                            <input type="date" className="field-input" value={profileForm.fecha_nacimiento} onChange={(e) => setProfileForm((c) => ({ ...c, fecha_nacimiento: e.target.value }))} readOnly={!editing} />
+                            <input type="date" className="field-input" value={profileForm.fecha_nacimiento} onChange={(e) => setProfileForm((c) => ({ ...c, fecha_nacimiento: e.target.value }))} onClick={(e) => editing && e.currentTarget.showPicker?.()} readOnly={!editing} />
                           </Field>
                           <Field label="Ciudad">
                             <input className="field-input" value={profileForm.ciudad} onChange={(e) => setProfileForm((c) => ({ ...c, ciudad: e.target.value }))} readOnly={!editing} />
@@ -1271,49 +1283,6 @@ export default function TQidoClientProfile() {
                     </div>
                   )}
 
-                  {/* ─ DIRECCIONES ─ */}
-                  {activeTab === 'direcciones' && (
-                    <div className="section-group">
-                      <div className="hint-box">
-                        <span className="hint-icon">ℹ️</span>
-                        <span>Las direcciones guardadas se usan para planificar servicios. Puedes marcar una como principal.</span>
-                      </div>
-                      <div className="item-list">
-                        {addresses.length === 0 && (
-                          <div className="empty-state"><div className="empty-state-icon">📍</div><div className="empty-state-text">Aún no tienes direcciones registradas.</div></div>
-                        )}
-                        {addresses.map((address, index) => (
-                          <div className="list-item" key={address.id ?? `address-${index}`}>
-                            <div className="list-item-header">
-                              <div><div className="list-item-title">{address.label || `Dirección ${index + 1}`}</div><div className="list-item-sub">{addressText(address)}</div></div>
-                              <div className="btn-row">
-                                {address.is_default && <span className="badge">⭐ Principal</span>}
-                                {editing && !address.is_default && <button className="btn-ghost" onClick={() => setAddresses((c) => c.map((item, i) => ({ ...item, is_default: i === index })))}>Marcar principal</button>}
-                                {editing && <button className="btn-danger" onClick={() => setAddresses((c) => c.filter((_, i) => i !== index))}>Eliminar</button>}
-                              </div>
-                            </div>
-                            <div className="list-item-body">
-                              <div className="form-grid">
-                                <Field label="Etiqueta"><input className="field-input" value={address.label} onChange={(e) => setAddresses((c) => c.map((item, i) => i === index ? { ...item, label: e.target.value } : item))} readOnly={!editing} /></Field>
-                                <Field label="Tipo">
-                                  {editing ? (
-                                    <select className="field-input" value={address.type} onChange={(e) => setAddresses((c) => c.map((item, i) => i === index ? { ...item, type: e.target.value } : item))}>
-                                      <option value="home">Casa</option><option value="office">Oficina</option><option value="shipping">Envío</option><option value="billing">Facturación</option>
-                                    </select>
-                                  ) : <input className="field-input" value={address.type} readOnly />}
-                                </Field>
-                                <div className="col-full"><Field label="Dirección"><input className="field-input" value={address.address_line_1} onChange={(e) => setAddresses((c) => c.map((item, i) => i === index ? { ...item, address_line_1: e.target.value } : item))} readOnly={!editing} /></Field></div>
-                                <div className="col-full"><Field label="Complemento (apto, piso, etc.)"><input className="field-input" value={address.address_line_2} onChange={(e) => setAddresses((c) => c.map((item, i) => i === index ? { ...item, address_line_2: e.target.value } : item))} readOnly={!editing} /></Field></div>
-                                <Field label="Barrio / Sector"><input className="field-input" value={address.neighborhood} onChange={(e) => setAddresses((c) => c.map((item, i) => i === index ? { ...item, neighborhood: e.target.value } : item))} readOnly={!editing} /></Field>
-                                <Field label="Referencia de acceso"><input className="field-input" value={address.reference} onChange={(e) => setAddresses((c) => c.map((item, i) => i === index ? { ...item, reference: e.target.value } : item))} readOnly={!editing} /></Field>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {editing && <button className="btn-add" onClick={() => setAddresses((c) => [...c, { ...emptyAddress(), is_default: c.length === 0 }])}>+ Añadir dirección</button>}
-                      </div>
-                    </div>
-                  )}
 
                   {/* ─ PAGOS ─ */}
                   {activeTab === 'pagos' && (

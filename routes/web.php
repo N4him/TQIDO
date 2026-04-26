@@ -13,14 +13,18 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-// ✅ Perfiles públicos (sin auth)
-Route::get('/profile/carer', function () {
-    return Inertia::render('profile/carer/carer');
-})->name('profile.carer.preview');
+// ✅ Perfiles protegidos por autenticación y rol
+Route::middleware(['auth', 'role:carer'])->group(function () {
+    Route::get('/profile/carer', function () {
+        return Inertia::render('profile/carer/carer');
+    })->name('profile.carer.preview');
+});
 
-Route::get('/profile/customer', function () {
-    return Inertia::render('profile/costumer/costumer');
-})->name('profile.customer.preview');
+Route::middleware(['auth', 'role:customer'])->group(function () {
+    Route::get('/profile/customer', function () {
+        return Inertia::render('profile/costumer/costumer');
+    })->name('profile.customer.preview');
+});
 
 // ✅ Preview temporal de dashboards (sin auth ni roles)
 Route::get('/dashboard/carer', function () {
@@ -54,6 +58,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register/carer', function () {
         return Inertia::render('auth/register_carer');
     })->name('register.carer');
+
+    Route::get('/register/social/{role}', [SocialController::class, 'completeRegistration'])
+        ->name('register.social.complete');
 });
 
 

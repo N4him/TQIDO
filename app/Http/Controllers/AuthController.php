@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -39,7 +40,7 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
-
+        Log::info('Usuario autenticado', ['user_id' => Auth::id(), 'email' => $credentials['email'], 'role' => Auth::user()->role,'page' => $this->resolveProfileRedirect(Auth::user())]);
         return redirect()->intended($this->resolveProfileRedirect(Auth::user()));
     }
 
@@ -70,6 +71,7 @@ class AuthController extends Controller
                 'message' => 'Credenciales incorrectas.',
             ], 401);
         }
+        Log::info('Usuario autenticado', ['user_id' => $user->id, 'email' => $user->email, 'role' => $user->role,'page' => $this->resolveProfileRedirect($user)]);
 
         return response()->json([
             'status' => 'success',
@@ -143,6 +145,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'user_id' => ['required', 'exists:users,id'],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]{7,20}$/'],
             'dni' => ['nullable', 'string', 'max:20'],
             'fecha_nacimiento' => ['nullable', 'date'],
             'direccion' => ['nullable', 'string', 'max:255'],
@@ -161,6 +164,9 @@ class AuthController extends Controller
         ], [
             'user_id.required' => 'El ID de usuario es obligatorio.',
             'user_id.exists' => 'El ID de usuario no existe.',
+            'phone.string' => 'El telefono debe ser una cadena de texto.',
+            'phone.max' => 'El telefono no puede tener mas de 20 caracteres.',
+            'phone.regex' => 'El telefono debe tener un formato valido.',
             'dni.string' => 'El DNI debe ser una cadena de texto.',
             'dni.max' => 'El DNI no puede tener más de 20 caracteres.',
             'fecha_nacimiento.date' => 'La fecha de nacimiento debe ser una fecha válida.',
@@ -341,6 +347,10 @@ class AuthController extends Controller
             $profile = DB::transaction(function () use ($request) {
                 $user = User::findOrFail($request->user_id);
                 $profile = $user->profile()->firstOrCreate([]);
+
+                $user->update([
+                    'phone' => $request->phone,
+                ]);
 
                 $profile->update([
                     'dni' => $request->dni,

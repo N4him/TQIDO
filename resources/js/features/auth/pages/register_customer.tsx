@@ -462,10 +462,10 @@ export default function RegisterCliente() {
                 <div className="cli-div-line"/>
               </div>
 
-              <button type="button" className="cli-google">
+              <a href="/auth/google?role=customer" className="cli-google" style={{ textDecoration:'none' }}>
                 <GoogleSVG/>
                 Continuar con Google
-              </button>
+              </a>
 
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:22 }}>
                 <p style={{ fontSize:13, color:'#4a6a80' }}>

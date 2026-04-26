@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import type { NavLink, DropdownItem, ProfileStep, CarerLayoutUser } from '@/features/layouts/customer_layout';
 import CustomerLayout from '@/features/layouts/customer_layout';
 import type { AddressProfile, CareProfile, ProfileCompletion, SharedData, UserProfile } from '@/types';
@@ -803,7 +803,7 @@ export default function TQidoClientProfile() {
 
   const [savedProfile,   setSavedProfile]   = useState<UserProfile | null>(initialProfile);
   const [completion,     setCompletion]      = useState<ProfileCompletion | null>((user?.profile_completion ?? null) as ProfileCompletion | null);
-  const [profileForm,    setProfileForm]     = useState({ user_id: Number(user?.id ?? 0), fecha_nacimiento: initialProfile?.fecha_nacimiento ?? '', ciudad: initialProfile?.ciudad ?? '', direccion: initialProfile?.direccion ?? '' });
+  const [profileForm,    setProfileForm]     = useState({ user_id: Number(user?.id ?? 0), phone: user?.phone ?? '', fecha_nacimiento: initialProfile?.fecha_nacimiento ?? '', ciudad: initialProfile?.ciudad ?? '', direccion: initialProfile?.direccion ?? '' });
   const [careProfiles,   setCareProfiles]    = useState<EditableCareProfile[]>(normalizeCareProfiles(initialProfile?.cuidados));
   const [addresses,      setAddresses]       = useState<EditableAddress[]>(normalizeAddresses(initialProfile?.direcciones));
   const [activeTab,      setActiveTab]       = useState<Tab>('personal');
@@ -814,7 +814,7 @@ export default function TQidoClientProfile() {
   const [saveError,      setSaveError]       = useState('');
 
   const profileSteps: ProfileStep[] = [
-    { label: 'Número verificado',  done: Boolean(user?.phone) },
+    { label: 'Número verificado',  done: Boolean(profileForm.phone || user?.phone) },
     { label: 'Dirección completa', done: Boolean(primaryAddress(addresses) || profileForm.direccion || savedProfile?.direccion) },
     { label: 'Fecha de nacimiento',done: Boolean(profileForm.fecha_nacimiento || savedProfile?.fecha_nacimiento) },
     { label: 'Ciudad',             done: Boolean(profileForm.ciudad || savedProfile?.ciudad) },
@@ -835,16 +835,20 @@ export default function TQidoClientProfile() {
     label, active: activeNav === label, onClick: () => setActiveNav(label),
   }));
 
+  const handleLogout = () => {
+    router.post('/logout');
+  };
+
   const dropdownItems: DropdownItem[] = [
     { icon: '👤', label: 'Mi perfil' },
     { icon: '📅', label: 'Mis reservas', badge: 0 },
     { icon: '❤️', label: 'Favoritos', badge: 0 },
     { icon: '⚙️', label: 'Ajustes' },
-    { icon: '↩',  label: 'Cerrar sesión', danger: true },
+    { icon: '↩',  label: 'Cerrar sesión', danger: true, onClick: handleLogout },
   ];
 
   const resetForm = () => {
-    setProfileForm({ user_id: Number(user?.id ?? 0), fecha_nacimiento: savedProfile?.fecha_nacimiento ?? '', ciudad: savedProfile?.ciudad ?? '', direccion: savedProfile?.direccion ?? '' });
+      setProfileForm({ user_id: Number(user?.id ?? 0), phone: user?.phone ?? '', fecha_nacimiento: savedProfile?.fecha_nacimiento ?? '', ciudad: savedProfile?.ciudad ?? '', direccion: savedProfile?.direccion ?? '' });
     setCareProfiles(normalizeCareProfiles(savedProfile?.cuidados));
     setAddresses(normalizeAddresses(savedProfile?.direcciones));
   };
@@ -866,7 +870,7 @@ export default function TQidoClientProfile() {
       const updated = (data.profile ?? null) as UserProfile | null;
       setSavedProfile(updated);
       setCompletion((data.profile_completion ?? null) as ProfileCompletion | null);
-      setProfileForm({ user_id: Number(user?.id ?? 0), fecha_nacimiento: updated?.fecha_nacimiento ?? profileForm.fecha_nacimiento, ciudad: updated?.ciudad ?? profileForm.ciudad, direccion: updated?.direccion ?? profileForm.direccion });
+      setProfileForm((current) => ({ user_id: Number(user?.id ?? 0), phone: current.phone, fecha_nacimiento: updated?.fecha_nacimiento ?? current.fecha_nacimiento, ciudad: updated?.ciudad ?? current.ciudad, direccion: updated?.direccion ?? current.direccion }));
       setCareProfiles(normalizeCareProfiles(updated?.cuidados));
       setAddresses(normalizeAddresses(updated?.direcciones));
       setEditing(false);
@@ -921,7 +925,7 @@ export default function TQidoClientProfile() {
                 <div className="profile-meta">
                   {[
                     { icon: '✉️', label: 'Email',               value: user?.email ?? 'Sin correo' },
-                    { icon: '📞', label: 'Teléfono',            value: user?.phone ?? 'Sin teléfono' },
+                    { icon: '📞', label: 'Teléfono',            value: profileForm.phone || user?.phone || 'Sin teléfono' },
                     { icon: '🎂', label: 'Nacimiento',          value: birthDate(profileForm.fecha_nacimiento || savedProfile?.fecha_nacimiento) },
                     { icon: '🏠', label: 'Dirección principal', value: addressText(mainAddr) || profileForm.direccion || savedProfile?.direccion || 'Sin dirección' },
                   ].map((item) => (
@@ -991,7 +995,7 @@ export default function TQidoClientProfile() {
                         <div className="form-grid" style={{ marginTop: 14 }}>
                           <Field label="Nombre"><input className="field-input" value={(user?.name ?? '').split(' ')[0] ?? ''} readOnly /></Field>
                           <Field label="Apellidos"><input className="field-input" value={(user?.name ?? '').split(' ').slice(1).join(' ')} readOnly /></Field>
-                          <Field label="Teléfono"><input className="field-input" value={user?.phone ?? ''} readOnly={!editing} /></Field>
+                          <Field label="Teléfono"><input className="field-input" value={profileForm.phone} onChange={(e) => setProfileForm((c) => ({ ...c, phone: e.target.value }))} readOnly={!editing} /></Field>
                           <Field label="Email"><input className="field-input" value={user?.email ?? ''} readOnly /></Field>
                         </div>
                       </div>

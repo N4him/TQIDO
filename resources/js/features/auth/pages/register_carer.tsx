@@ -496,6 +496,19 @@ export default function RegisterCuidador() {
                 )}
               </div>
 
+              <div style={{ display:'flex', alignItems:'center', gap:12, margin:'20px 0' }}>
+                <div className="cud-div-line"/>
+                <span style={{ fontSize:11.5, color:'#96c0d8', fontWeight:500, whiteSpace:'nowrap' }}>
+                  o continúa con
+                </span>
+                <div className="cud-div-line"/>
+              </div>
+
+              <a href="/auth/google?role=carer" className="cud-google" style={{ textDecoration:'none' }}>
+                <GoogleSVG/>
+                Continuar con Google
+              </a>
+
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop: 22 }}>
                 <p style={{ fontSize: 13, color: '#4a6a80' }}>
                   ¿Ya tienes cuenta?{' '}
