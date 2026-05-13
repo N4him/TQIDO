@@ -31,6 +31,23 @@ Route::get('/dashboard/carer', function () {
     return Inertia::render('dashboard/carer/dashboard');
 })->name('dashboard.carer.preview');
 
+Route::get('/dashboard/carer/agenda', function () {
+    return Inertia::render('dashboard/carer/agenda');
+})->name('dashboard.carer.agenda');
+
+Route::get('/dashboard/carer/clientes', function () {
+    return Inertia::render('dashboard/carer/clientes');
+})->name('dashboard.carer.clientes');
+
+Route::get('/dashboard/customer/reservas', function () {
+    return Inertia::render('dashboard/customer/reservas');
+})->name('dashboard.customer.reservas');
+
+Route::get('/dashboard/customer/favoritos', function () {
+    return Inertia::render('dashboard/customer/favoritos');
+})->name('dashboard.customer.favoritos
+');
+
 Route::get('/dashboard/customer', function () {
     return Inertia::render('dashboard/customer/dashboard');
 })->name('dashboard.customer.preview');

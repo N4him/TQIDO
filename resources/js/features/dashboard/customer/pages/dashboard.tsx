@@ -112,7 +112,7 @@ const pageCss = `
 .filter-bar {
   display: flex; align-items: center; gap: var(--s2);
   padding: var(--s6) var(--s8) 0;
-  max-width: 1200px; margin: 0 auto;
+  max-width: 1920px; margin: 0 auto;
   flex-wrap: wrap; position: relative; z-index: 1;
 }
 .filter-label { font-size: 11px; font-weight: 600; color: var(--on-dom-60); letter-spacing: 0.06em; text-transform: uppercase; margin-right: var(--s1); }
@@ -149,7 +149,7 @@ const pageCss = `
 .results-head {
   display: flex; align-items: baseline; gap: var(--s2);
   padding: var(--s6) var(--s8) var(--s4);
-  max-width: 1200px; margin: 0 auto;
+  max-width: 1920px; margin: 0 auto;
   position: relative; z-index: 1;
 }
 .results-count { font-family: var(--ff-d); font-size: 24px; font-weight: 500; color: var(--on-dom); letter-spacing: -0.02em; }
@@ -159,7 +159,7 @@ const pageCss = `
 /* ── CARER GRID ── */
 .grid-outer {
   padding: 0 var(--s8) var(--s16);
-  max-width: 1200px; margin: 0 auto;
+  max-width: 1920px; margin: 0 auto;
   position: relative; z-index: 1;
 }
 .carer-grid {
@@ -394,7 +394,6 @@ export default function TQidoHome() {
         notifCount={1}
         profileSteps={PROFILE_STEPS}
         dropdownItems={dropdownItems}
-        favsCount={Math.max(favs.size, 4)}
       >
         {/* ── HERO ── */}
         <section className="hero-section">

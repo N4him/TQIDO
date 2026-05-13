@@ -249,7 +249,7 @@ body::after {
 
 /* ══ PAGE ══ */
 .layout-page {
-  max-width: 1160px;
+  max-width: 1920px;
   margin: 0 auto;
   padding: 32px var(--s8) 72px;
   position: relative; z-index: 1;
