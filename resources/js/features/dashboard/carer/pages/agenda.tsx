@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import CarerLayout from '@/features/layouts/carer_layout';
+import type { SharedData } from '@/types';
 
 const css = `
 /* ═══════════════════════ ROOT ═══════════════════════ */
@@ -269,6 +271,8 @@ function relativeGroup(ds: string): string {
 }
 
 export default function AgendaPage() {
+  const { auth } = usePage<SharedData>().props;
+  const user = auth.user;
   const [activeNav,    setActiveNav]    = useState('Agenda');
   const [viewYear,     setViewYear]     = useState(2025);
   const [viewMonth,    setViewMonth]    = useState(5);
@@ -318,7 +322,14 @@ export default function AgendaPage() {
   return (
     <>
       <style>{css}</style>
-      <CarerLayout initials="MC" activeNav={activeNav} onNavChange={setActiveNav}>
+      <CarerLayout
+        initials=""
+        userName={user?.name ?? 'Tu perfil'}
+        userEmail={user?.email ?? 'Sin correo'}
+        profileCompletion={user?.profile_completion?.percentage ?? 0}
+        activeNav={activeNav}
+        onNavChange={setActiveNav}
+      >
         <div className="agenda-root">
 
           {/* ── CALENDAR CARD: month nav + day strip in one block ── */}

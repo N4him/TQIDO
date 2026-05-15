@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import CarerLayout from '@/features/layouts/carer_layout';
+import type { SharedData, User } from '@/types';
 
 const css = `
 /* ═══════════════════════ HERO ═══════════════════════ */
@@ -188,8 +190,6 @@ const css = `
 `;
 
 /* ── DATA ── */
-const CARER = { name: 'María Carrasco', initials: 'MC', specialty: 'Cuidadora de adultos mayores', city: 'Madrid' };
-
 const TODAY_SLOTS = [
     { time: '09:00–12:00', name: 'José Fernández', type: 'Adulto mayor · 3h', status: 'confirmed' },
     { time: '16:00–19:00', name: 'Lucas Martín',   type: 'Niño · 3h',         status: 'confirmed' },
@@ -220,6 +220,14 @@ const RATING_BARS = [5, 4, 3, 2, 1];
 const RATING_VALS = [18, 5, 1, 0, 0];
 const TOTAL_REV   = RATING_VALS.reduce((a, b) => a + b, 0);
 
+const initialsOf = (value: string) =>
+    value.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'TU';
+
+const firstNameOf = (value: string) => value.split(' ').filter(Boolean)[0] ?? 'perfil';
+
+const locationOf = (user?: User | null) =>
+    user?.profile?.ciudad || user?.profile?.direccion || user?.specialty || 'Tu ciudad';
+
 function useCountdown() {
     const [mins, setMins] = useState(47);
     useEffect(() => {
@@ -230,6 +238,14 @@ function useCountdown() {
 }
 
 export default function CarerDashboard() {
+    const { auth } = usePage<SharedData>().props;
+    const user = auth.user;
+    const carerName = user?.name ?? 'Tu perfil';
+    const carerInitials = initialsOf(carerName);
+    const carerFirstName = firstNameOf(carerName);
+    const carerLocation = locationOf(user);
+    const profileCompletion = user?.profile_completion?.percentage ?? 0;
+
     const [online,   setOnline]   = useState(true);
     const [activeNav, setActiveNav] = useState('Inicio');
     const [requests, setRequests] = useState(REQUESTS_DATA);
@@ -242,13 +258,20 @@ export default function CarerDashboard() {
     return (
         <>
             <style>{css}</style>
-            <CarerLayout initials={CARER.initials} activeNav={activeNav} onNavChange={setActiveNav}>
+            <CarerLayout
+                initials={carerInitials}
+                userName={carerName}
+                userEmail={user?.email ?? 'Sin correo'}
+                profileCompletion={profileCompletion}
+                activeNav={activeNav}
+                onNavChange={setActiveNav}
+            >
 
                 {/* HERO */}
                 <div className="hero">
                     <div className="hero-left">
-                        <div className="hero-greeting">Miércoles 25 jun · {CARER.city}</div>
-                        <div className="hero-name">Hola, <em>{CARER.name.split(' ')[0]}</em> 👋</div>
+                        <div className="hero-greeting">Miércoles 25 jun · {carerLocation}</div>
+                        <div className="hero-name">Hola, <em>{carerFirstName}</em> 👋</div>
                         <div className="hero-status-row">
                             <div className={`toggle-wrap${online ? ' online' : ''}`} onClick={() => setOnline((o) => !o)}>
                                 <div className="pulse-dot" />

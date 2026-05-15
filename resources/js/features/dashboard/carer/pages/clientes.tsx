@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
+import { usePage } from '@inertiajs/react';
 import CarerLayout from '@/features/layouts/carer_layout';
+import type { SharedData } from '@/types';
 
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@300;400;500;600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
@@ -360,6 +362,8 @@ const recLabel = (days:number) => days===0?'Hoy': days===1?'Ayer': days<7?`Hace 
 const isMedical = (n:string) => /medicaci[oó]n|glucemia|alérgi|movilidad|silla|operaci[oó]n|supervisión|llamar/i.test(n);
 
 export default function ClientsPage() {
+  const { auth } = usePage<SharedData>().props;
+  const user = auth.user;
   const [activeNav, setActiveNav] = useState('Clientes');
   const [search, setSearch]       = useState('');
   const [selected, setSelected]   = useState<Client|null>(null);
@@ -384,7 +388,14 @@ export default function ClientsPage() {
   return (
     <>
       <style>{css}</style>
-      <CarerLayout initials="MC" activeNav={activeNav} onNavChange={setActiveNav}>
+      <CarerLayout
+        initials=""
+        userName={user?.name ?? 'Tu perfil'}
+        userEmail={user?.email ?? 'Sin correo'}
+        profileCompletion={user?.profile_completion?.percentage ?? 0}
+        activeNav={activeNav}
+        onNavChange={setActiveNav}
+      >
         <div className="cr">
 
           {/* ─── SEARCH ─── */}

@@ -1,4 +1,8 @@
+import { Link, router, usePage } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
+import dashboardRoutes from '@/routes/dashboard';
+import profileRoutes from '@/routes/profile';
+import type { SharedData } from '@/types';
 
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -116,6 +120,7 @@ body::after {
 }
 
 .nav-pill {
+  display:block;
   padding: 9px 24px;
   border-radius: var(--r-full);
   font-size: 14px;
@@ -125,6 +130,7 @@ body::after {
   border: none;
   font-family: var(--ff-s);
   cursor: pointer;
+  text-decoration:none;
   transition: all .18s ease;
   letter-spacing: .01em;
 }
@@ -517,7 +523,14 @@ body::after {
 }
 `;
 
-const NAV_LINKS = ['Inicio', 'Agenda', 'Clientes'];
+const NAV_LINKS = [
+  { label: 'Inicio', href: dashboardRoutes.carer.preview.url() },
+  { label: 'Agenda', href: dashboardRoutes.carer.agenda.url() },
+  { label: 'Clientes', href: dashboardRoutes.carer.clientes.url() },
+] as const;
+
+const initialsOf = (value: string) =>
+  value.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'TU';
 
 const DD_MENU_ITEMS = [
   { icon: '👤', label: 'Mi perfil',    badge: null, danger: false },
@@ -551,8 +564,26 @@ export default function CarerLayout({
   onMenuItemClick,
   onLogout,
 }: CarerLayoutProps) {
+  const page = usePage<SharedData>();
+  const authUser = page.props.auth.user;
+  const currentPath = page.url.split('?')[0];
+  const resolvedInitials = initials || initialsOf(authUser?.name ?? 'Tu perfil');
+  const resolvedUserName = userName === 'Tu perfil' ? (authUser?.name ?? 'Tu perfil') : userName;
+  const resolvedUserEmail = userEmail === 'Sin correo' ? (authUser?.email ?? 'Sin correo') : userEmail;
+  const resolvedProfileCompletion = profileCompletion || authUser?.profile_completion?.percentage || 0;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  const handleMenuItemClick = (itemLabel: string) => {
+    if (itemLabel === 'Mi perfil') {
+      router.get(profileRoutes.carer.preview.url());
+      setDropdownOpen(false);
+      return;
+    }
+
+    onMenuItemClick?.(itemLabel);
+    setDropdownOpen(false);
+  };
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -580,14 +611,15 @@ export default function CarerLayout({
 
         {/* Center pills */}
         <div className="nav-center">
-          {NAV_LINKS.map((n) => (
-            <button
-              key={n}
-              className={`nav-pill${activeNav === n ? ' active' : ''}`}
-              onClick={() => onNavChange?.(n)}
+          {NAV_LINKS.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`nav-pill${activeNav === item.label || currentPath === item.href ? ' active' : ''}`}
+              onClick={() => onNavChange?.(item.label)}
             >
-              {n}
-            </button>
+              {item.label}
+            </Link>
           ))}
         </div>
 
@@ -607,16 +639,16 @@ export default function CarerLayout({
               aria-haspopup="true"
               aria-expanded={dropdownOpen}
             >
-              {initials}
+              {resolvedInitials}
             </div>
 
             <div className={`nav-dropdown${dropdownOpen ? ' visible' : ' hidden'}`} role="menu">
               {/* User header */}
               <div className="dd-header">
-                <div className="dd-avatar">{initials}</div>
+                <div className="dd-avatar">{resolvedInitials}</div>
                 <div style={{ minWidth: 0 }}>
-                  <div className="dd-name">{userName}</div>
-                  <div className="dd-email" title={userEmail}>{userEmail}</div>
+                  <div className="dd-name">{resolvedUserName}</div>
+                  <div className="dd-email" title={resolvedUserEmail}>{resolvedUserEmail}</div>
                 </div>
               </div>
 
@@ -624,10 +656,10 @@ export default function CarerLayout({
               <div className="dd-progress">
                 <div className="dd-prog-row">
                   <span className="dd-prog-label">Perfil completado</span>
-                  <span className="dd-prog-pct">{profileCompletion}%</span>
+                  <span className="dd-prog-pct">{resolvedProfileCompletion}%</span>
                 </div>
                 <div className="dd-track">
-                  <div className="dd-fill" style={{ width: `${profileCompletion}%` }} />
+                  <div className="dd-fill" style={{ width: `${resolvedProfileCompletion}%` }} />
                 </div>
                 {profileCompletionNext && (
                   <div className="dd-next">Siguiente: {profileCompletionNext}</div>
@@ -641,10 +673,7 @@ export default function CarerLayout({
                     key={item.label}
                     className="dd-item"
                     role="menuitem"
-                    onClick={() => {
-                      onMenuItemClick?.(item.label);
-                      setDropdownOpen(false);
-                    }}
+                    onClick={() => handleMenuItemClick(item.label)}
                   >
                     <div className="dd-item-icon">{item.icon}</div>
                     <span className="dd-item-text">{item.label}</span>

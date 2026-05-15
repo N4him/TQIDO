@@ -26,31 +26,35 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     })->name('profile.customer.preview');
 });
 
-// ✅ Preview temporal de dashboards (sin auth ni roles)
-Route::get('/dashboard/carer', function () {
-    return Inertia::render('dashboard/carer/dashboard');
-})->name('dashboard.carer.preview');
+Route::prefix('dashboard')->group(function () {
+    Route::middleware(['auth', 'role:carer'])->prefix('carer')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('dashboard/carer/dashboard');
+        })->name('dashboard.carer.preview');
 
-Route::get('/dashboard/carer/agenda', function () {
-    return Inertia::render('dashboard/carer/agenda');
-})->name('dashboard.carer.agenda');
+        Route::get('/agenda', function () {
+            return Inertia::render('dashboard/carer/agenda');
+        })->name('dashboard.carer.agenda');
 
-Route::get('/dashboard/carer/clientes', function () {
-    return Inertia::render('dashboard/carer/clientes');
-})->name('dashboard.carer.clientes');
+        Route::get('/clientes', function () {
+            return Inertia::render('dashboard/carer/clientes');
+        })->name('dashboard.carer.clientes');
+    });
 
-Route::get('/dashboard/customer/reservas', function () {
-    return Inertia::render('dashboard/customer/reservas');
-})->name('dashboard.customer.reservas');
+    Route::middleware(['auth', 'role:customer'])->prefix('customer')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('dashboard/customer/dashboard');
+        })->name('dashboard.customer.preview');
 
-Route::get('/dashboard/customer/favoritos', function () {
-    return Inertia::render('dashboard/customer/favoritos');
-})->name('dashboard.customer.favoritos
-');
+        Route::get('/reservas', function () {
+            return Inertia::render('dashboard/customer/reservas');
+        })->name('dashboard.customer.reservas');
 
-Route::get('/dashboard/customer', function () {
-    return Inertia::render('dashboard/customer/dashboard');
-})->name('dashboard.customer.preview');
+        Route::get('/favoritos', function () {
+            return Inertia::render('dashboard/customer/favoritos');
+        })->name('dashboard.customer.favoritos');
+    });
+});
 
 Route::get('/profile/public', function () {
     return Inertia::render('profile_public/profile_carer');
@@ -63,21 +67,24 @@ Route::middleware('guest')->group(function () {
     })->name('login');
     Route::post('/login', [AuthController::class, 'webLogin'])->name('login.submit');
 
-    Route::get('/register', function () {
-        return Inertia::render('auth/register');
-    })->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+    Route::prefix('register')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('auth/register');
+        })->name('register');
 
-    Route::get('/register/customer', function () {
-        return Inertia::render('auth/register_customer');
-    })->name('register.customer');;
+        Route::post('/', [AuthController::class, 'register'])->name('register.submit');
 
-    Route::get('/register/carer', function () {
-        return Inertia::render('auth/register_carer');
-    })->name('register.carer');
+        Route::get('/customer', function () {
+            return Inertia::render('auth/register_customer');
+        })->name('register.customer');
 
-    Route::get('/register/social/{role}', [SocialController::class, 'completeRegistration'])
-        ->name('register.social.complete');
+        Route::get('/carer', function () {
+            return Inertia::render('auth/register_carer');
+        })->name('register.carer');
+
+        Route::get('/social/{role}', [SocialController::class, 'completeRegistration'])
+            ->name('register.social.complete');
+    });
 });
 
 
@@ -85,4 +92,4 @@ Route::middleware('guest')->group(function () {
 Route::get('/auth/{provider}', [SocialController::class, 'redirect'])->name('api.social.redirect');
 Route::get('/auth/{provider}/callback', [SocialController::class, 'callback'])->name('api.social.callback');
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

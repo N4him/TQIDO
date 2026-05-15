@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 
 class Profile extends Model
 {
@@ -77,7 +78,6 @@ class Profile extends Model
             ];
 
             $relations = [
-                'direcciones' => fn () => $this->direcciones()->exists(),
                 'disponibilidades' => fn () => $this->disponibilidades()->exists(),
                 'servicios' => fn () => $this->servicios()
                     ->whereNotNull('descripcion')
