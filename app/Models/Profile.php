@@ -80,6 +80,7 @@ class Profile extends Model
             $relations = [
                 'disponibilidades' => fn () => $this->disponibilidades()->exists(),
                 'servicios' => fn () => $this->servicios()
+                    ->whereNotNull('precio_hora')
                     ->whereNotNull('descripcion')
                     ->where('descripcion', '!=', '')
                     ->exists(),

@@ -48,6 +48,7 @@ html, body {
   font-family: var(--ff-s);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  overflow-y: auto !important;
 }
 
 body {

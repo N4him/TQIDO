@@ -71,7 +71,12 @@ export interface ProfileService {
     id?: number;
     perfil_id?: number;
     tipo?: string | null;
+    precio?: number | null;
+    precio_hora?: number | null;
+    precio_oferta?: number | null;
+    oferta_activa?: boolean;
     descripcion?: string | null;
+    estado?: string | null;
 }
 
 export interface ProfileCompletion {
