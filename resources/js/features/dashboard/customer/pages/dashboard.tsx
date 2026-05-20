@@ -217,14 +217,20 @@ const pageCss = `
    DATOS (en prod vendrían de props/API)
 ───────────────────────────────────────────── */
 const CARERS: Carer[] = [
-  { id:1, av:'MC', bg:'linear-gradient(135deg,#0D56A0,#1A8EE6)', name:'María Carrasco', spec:'Adultos mayores · Niños',    price:18, tags:['Primeros auxilios','Enfermería'],  avail:true,  stars:4.9, reviews:24, cat:'adultos'  },
-  { id:2, av:'LP', bg:'linear-gradient(135deg,#0b6b45,#12B76A)', name:'Laura Pons',     spec:'Niños y bebés',              price:16, tags:['Pedagogía','Inglés'],              avail:true,  stars:4.8, reviews:18, cat:'ninos'    },
-  { id:3, av:'AS', bg:'linear-gradient(135deg,#0A3D78,#3AA5F5)', name:'Ana Suárez',     spec:'Mayores · Discapacidad',     price:20, tags:['Enfermería','Fisioterapia'],       avail:true,  stars:5.0, reviews:31, cat:'adultos'  },
-  { id:4, av:'CR', bg:'linear-gradient(135deg,#7c2d12,#ea580c)', name:'Carlos Ruiz',    spec:'Mascotas · Paseos diarios',  price:14, tags:['Veterinaria','Adiestramiento'],   avail:false, stars:4.6, reviews:9,  cat:'mascotas' },
-  { id:5, av:'DM', bg:'linear-gradient(135deg,#0D56A0,#76C3FF)', name:'Diego Molina',   spec:'Niños · Actividades',        price:15, tags:['Ed. física','Manualidades'],       avail:true,  stars:4.7, reviews:12, cat:'ninos'    },
-  { id:6, av:'IG', bg:'linear-gradient(135deg,#0A3D78,#1A8EE6)', name:'Isabel García',  spec:'Adultos mayores · Compañía', price:17, tags:['Gerontología','Compañía'],        avail:false, stars:4.9, reviews:22, cat:'adultos'  },
-  { id:7, av:'SR', bg:'linear-gradient(135deg,#065f46,#2dd4e0)', name:'Sofía Romero',   spec:'Niños · Bebés',              price:15, tags:['Montessori','Prim. auxilios'],     avail:true,  stars:4.8, reviews:16, cat:'ninos'    },
-  { id:8, av:'PM', bg:'linear-gradient(135deg,#0D56A0,#AEDCFF)', name:'Pablo Martín',   spec:'Mascotas · Entrenamiento',   price:13, tags:['Entrenador','Paseos'],             avail:true,  stars:4.5, reviews:7,  cat:'mascotas' },
+  {
+    id: 1,
+    photoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
+    name: 'Sara González',
+    spec: 'Cuidadora de adultos mayores',
+    avail: true,
+    stars: 4.9,
+    reviews: 184,
+    cat: 'adultos',
+    services: [
+      { tipo: 'adultos_mayores', descripcion: 'Cuidado a domicilio para mayores con movilidad reducida', precio_hora: 18, precio_oferta: 14, oferta_activa: true },
+      { tipo: 'ninos',           descripcion: 'Cuidado de niños con actividades educativas', precio_hora: 16, precio_oferta: null, oferta_activa: false },
+    ],
+  },
 ];
 
 const CATS = [
@@ -275,8 +281,6 @@ export default function TQidoHome() {
     .filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.spec.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       if (sort === 'rating')      return b.stars - a.stars;
-      if (sort === 'precio-asc')  return a.price - b.price;
-      if (sort === 'precio-desc') return b.price - a.price;
       return 0;
     });
 
@@ -428,8 +432,7 @@ export default function TQidoHome() {
                 carer={c}
                 isFav={favs.has(c.id)}
                 onToggleFav={toggleFav}
-                onBook={carer => console.log('Reservar', carer.name)}
-                onViewProfile={carer => console.log('Ver perfil', carer.name)}
+                onBook={(carer: Carer) => console.log('Reservar', carer.name)}
               />
             ))}
           </div>

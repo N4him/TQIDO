@@ -993,13 +993,16 @@ const normalizeAvailabilitySlots = (items?: AvailabilitySlot[] | null): Editable
 const normalizeServices = (items?: ProfileService[] | null): EditableService[] =>
   SERVICE_TYPE_OPTIONS.map((option) => {
     const service = (items ?? []).find((item) => item.tipo === option.key);
+    const precioHora = service != null && (service as any).precio_hora != null ? String((service as any).precio_hora) : '';
+    const precioOferta = service != null && (service as any).precio_oferta != null ? String((service as any).precio_oferta) : '';
+    const ofertaActiva = Boolean(service != null && ((service as any).oferta_activa ?? false));
     return {
       id: service?.id,
       tipo: option.key,
       descripcion: service?.descripcion ?? '',
-      precio_hora: service?.precio_hora != null ? String(service.precio_hora) : '',
-      precio_oferta: service?.precio_oferta != null ? String(service.precio_oferta) : '',
-      oferta_activa: Boolean(service?.oferta_activa),
+      precio_hora: precioHora,
+      precio_oferta: precioOferta,
+      oferta_activa: ofertaActiva,
     };
   });
 
@@ -1241,7 +1244,7 @@ export default function TQidoClientProfile() {
 
               {/* Tabs */}
               <nav className="tab-nav">
-                {TABS.filter((tab) => tab !== 'direcciones').map((tab) => (
+                {TABS.filter((tab) => tab !== ('direcciones' as any)).map((tab) => (
                   <button key={tab} className={`tab-btn${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>
                     <span className="tab-icon">{TAB_CONFIG[tab].icon}</span>
                     <span className="tab-label">{TAB_CONFIG[tab].label}</span>
