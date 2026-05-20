@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import type { NavLink, DropdownItem, ProfileStep, CarerLayoutUser } from '@/features/layouts/customer_layout';
 import CarerLayout from '@/features/layouts/customer_layout';
 import CarerCard, { carerCardCss } from '@/components/common/care_card';
 import type { Carer } from '@/components/common/care_card';
+import type { SharedData } from '@/types';
 
 /* ─────────────────────────────────────────────
    PAGE-SPECIFIC CSS
@@ -216,23 +217,6 @@ const pageCss = `
 /* ─────────────────────────────────────────────
    DATOS (en prod vendrían de props/API)
 ───────────────────────────────────────────── */
-const CARERS: Carer[] = [
-  {
-    id: 1,
-    photoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
-    name: 'Sara González',
-    spec: 'Cuidadora de adultos mayores',
-    avail: true,
-    stars: 4.9,
-    reviews: 184,
-    cat: 'adultos',
-    services: [
-      { tipo: 'adultos_mayores', descripcion: 'Cuidado a domicilio para mayores con movilidad reducida', precio_hora: 18, precio_oferta: 14, oferta_activa: true },
-      { tipo: 'ninos',           descripcion: 'Cuidado de niños con actividades educativas', precio_hora: 16, precio_oferta: null, oferta_activa: false },
-    ],
-  },
-];
-
 const CATS = [
   { key:'todos',    label:'Todos',    emoji:'✦'  },
   { key:'adultos',  label:'Mayores',  emoji:'👴' },
@@ -240,12 +224,6 @@ const CATS = [
   { key:'mascotas', label:'Mascotas', emoji:'🐾' },
 ];
 
-const USER: CarerLayoutUser = {
-  name: 'Sara González',
-  email: 'sara@email.com',
-  initials: 'SG',
-  city: 'Madrid',
-};
 
 const PROFILE_STEPS: ProfileStep[] = [
   { label:'Foto de perfil',         done:true  },
@@ -255,10 +233,34 @@ const PROFILE_STEPS: ProfileStep[] = [
   { label:'Preferencias guardadas', done:false },
 ];
 
+const initialsOf = (value: string) =>
+  value.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'TU';
+
+const SERVICE_CATEGORY_BY_TYPE: Record<string, string> = {
+  adultos_mayores: 'adultos',
+  ninos: 'ninos',
+  mascotas: 'mascotas',
+};
+
+type DashboardCustomerProps = SharedData & {
+  carers: Carer[];
+};
+
+
+
 /* ─────────────────────────────────────────────
-   PAGE COMPONENT
+
 ───────────────────────────────────────────── */
 export default function TQidoHome() {
+  const { auth, carers } = usePage<DashboardCustomerProps>().props;
+  const user = auth.user;
+  const customerUser: CarerLayoutUser = {
+    name: user?.name ?? 'Tu perfil',
+    email: user?.email ?? 'Sin correo',
+    initials: initialsOf(user?.name ?? 'Tu perfil'),
+    city: typeof user?.profile?.ciudad === 'string' && user.profile.ciudad.trim() !== '' ? user.profile.ciudad : 'Tu ciudad',
+  };
+
   const [cat,    setCat]    = useState('todos');
   const [avail,  setAvail]  = useState('todos');
   const [sort,   setSort]   = useState('rating');
@@ -275,17 +277,24 @@ export default function TQidoHome() {
     });
   };
 
-  const filtered = CARERS
-    .filter(c => cat   === 'todos' || c.cat === cat)
+  const matchesCategory = (carer: Carer, category: string) =>
+    category === 'todos' || carer.services.some((service) => SERVICE_CATEGORY_BY_TYPE[service.tipo] === category);
+
+  const filtered = carers
+    .filter(c => matchesCategory(c, cat))
     .filter(c => avail === 'todos' || c.avail)
     .filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.spec.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       if (sort === 'rating')      return b.stars - a.stars;
       return 0;
-    });
+    })
+    .map(c => ({
+      ...c,
+      cat: cat !== 'todos' && matchesCategory(c, cat) ? cat : c.cat,
+    }));
 
   const reset    = () => { setCat('todos'); setAvail('todos'); setSearch(''); };
-  const countCat = (k: string) => CARERS.filter(c => k === 'todos' || c.cat === k).length;
+  const countCat = (k: string) => carers.filter(c => matchesCategory(c, k)).length;
   const hasFilter = cat !== 'todos' || avail !== 'todos' || search;
 
   const navLinks: NavLink[] = ['Explorar', 'Mis reservas', 'Favoritos'].map(label => ({
@@ -309,7 +318,7 @@ export default function TQidoHome() {
       <style>{pageCss}{carerCardCss}</style>
 
       <CarerLayout
-        user={USER}
+        user={customerUser}
         navLinks={navLinks}
         notifCount={1}
         profileSteps={PROFILE_STEPS}
@@ -319,10 +328,10 @@ export default function TQidoHome() {
         <section className="hero-section">
           <div className="hero-pill">
             <div className="hero-pill-dot" />
-            Madrid · 48 cuidadores activos
+            {customerUser.city} · 48 cuidadores activos
           </div>
           <h1 className="hero-title">
-            Hola, <em>{USER.name.split(' ')[0]}</em> 👋<br />
+            Hola, <em>{customerUser.name.split(' ')[0]}</em> 👋<br />
             ¿A quién cuidamos hoy?
           </h1>
           <p className="hero-sub">
@@ -441,3 +450,8 @@ export default function TQidoHome() {
     </>
   );
 }
+
+
+
+
+
