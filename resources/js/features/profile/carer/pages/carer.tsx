@@ -48,9 +48,7 @@ const css = `
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ══ PAGE SHELL ══════════════════════════════════════════ */
-.profile-bg {
-  padding: 0;
-}
+.profile-bg { padding: 0; }
 
 .profile-shell {
   display: grid;
@@ -286,7 +284,54 @@ const css = `
 .sidebar-actions {
   padding: 14px 22px 22px;
   display: flex;
+  flex-direction: column;
   gap: 8px;
+}
+
+/* ══ POSTULARME BUTTON ═══════════════════════════════════ */
+.btn-apply {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: var(--r-md);
+  background: linear-gradient(135deg, #1E8A5E 0%, #2DAE79 100%);
+  color: #fff;
+  font: 700 13.5px var(--ff-s);
+  border: none;
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: 0 3px 14px rgba(30,138,94,.32);
+  letter-spacing: .02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.btn-apply:hover {
+  background: linear-gradient(135deg, #177a52 0%, #26a070 100%);
+  box-shadow: 0 6px 22px rgba(30,138,94,.42);
+  transform: translateY(-1px);
+}
+
+.btn-apply:active { transform: translateY(0); }
+
+.btn-apply:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-apply-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a7f3d0;
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(167,243,208,.3); }
+  50%       { box-shadow: 0 0 0 5px rgba(167,243,208,.0); }
 }
 
 /* ══ MAIN AREA ═══════════════════════════════════════════ */
@@ -326,16 +371,8 @@ const css = `
   gap: 3px;
 }
 
-.tab-btn:hover {
-  background: var(--sky-mist);
-  color: var(--sky);
-}
-
-.tab-btn.active {
-  background: #89D9FB;
-  color: #fff;
-}
-
+.tab-btn:hover { background: var(--sky-mist); color: var(--sky); }
+.tab-btn.active { background: #89D9FB; color: #fff; }
 .tab-icon  { font-size: 16px; line-height: 1; }
 .tab-label { font-size: 10.5px; font-weight: 600; letter-spacing: .01em; }
 
@@ -515,19 +552,94 @@ select.field-input {
   cursor: pointer;
 }
 
-input[type="date"].field-input {
-  padding-right: 40px;
-  cursor: pointer;
+input[type="date"].field-input { padding-right: 40px; cursor: pointer; }
+input[type="date"].field-input::-webkit-calendar-picker-indicator { opacity: .9; cursor: pointer; }
+input[type="date"].field-input[readonly]::-webkit-calendar-picker-indicator { opacity: .45; cursor: default; }
+
+/* ══ PRECIO / OFERTA FIELDS ══════════════════════════════ */
+.price-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  margin-top: 14px;
 }
 
-input[type="date"].field-input::-webkit-calendar-picker-indicator {
-  opacity: .9;
-  cursor: pointer;
+.price-input-wrap {
+  position: relative;
+  flex: 1;
 }
 
-input[type="date"].field-input[readonly]::-webkit-calendar-picker-indicator {
-  opacity: .45;
-  cursor: default;
+.price-symbol {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sky);
+  pointer-events: none;
+  opacity: .75;
+}
+
+.price-input-wrap .field-input { padding-left: 26px; }
+
+.btn-oferta {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font: 600 12px var(--ff-s);
+  border: 1.5px solid;
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-oferta.off {
+  background: rgba(255,255,255,.7);
+  border-color: rgba(74,162,219,.25);
+  color: var(--sky-deep);
+}
+
+.btn-oferta.off:hover {
+  background: var(--sky-mist);
+  border-color: var(--sky-light);
+}
+
+.btn-oferta.on {
+  background: linear-gradient(135deg, #FEF0D0 0%, #FFF8E8 100%);
+  border-color: rgba(184,112,32,.30);
+  color: var(--amber);
+}
+
+.btn-oferta.on:hover {
+  background: linear-gradient(135deg, #fde8b8 0%, #FEF0D0 100%);
+}
+
+.oferta-field-wrap {
+  overflow: hidden;
+  transition: max-height .28s cubic-bezier(.4,0,.2,1), opacity .22s ease;
+  max-height: 0;
+  opacity: 0;
+}
+
+.oferta-field-wrap.open {
+  max-height: 90px;
+  opacity: 1;
+}
+
+.oferta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--amber);
+  background: var(--amber-bg);
+  border: 1px solid rgba(184,112,32,.22);
+  border-radius: var(--r-full);
+  padding: 3px 10px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 /* ══ LIST ITEMS ══════════════════════════════════════════ */
@@ -607,20 +719,8 @@ input[type="date"].field-input[readonly]::-webkit-calendar-picker-indicator {
   position: relative;
 }
 
-.day-chip-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-
-.day-chip-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(74,162,219,.2);
-  transition: all .22s;
-}
+.day-chip-label { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.day-chip-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(74,162,219,.2); transition: all .22s; }
 
 .day-chip.active {
   background: linear-gradient(140deg, var(--sky-light) 0%, var(--sky) 100%);
@@ -732,11 +832,7 @@ input[type="date"].field-input[readonly]::-webkit-calendar-picker-indicator {
   letter-spacing: .01em;
 }
 
-.btn-primary:hover  {
-  background: var(--sky-deep);
-  box-shadow: 0 6px 22px rgba(74,162,219,.42);
-  transform: translateY(-1px);
-}
+.btn-primary:hover  { background: var(--sky-deep); box-shadow: 0 6px 22px rgba(74,162,219,.42); transform: translateY(-1px); }
 .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(74,162,219,.25); }
 .btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 
@@ -752,11 +848,7 @@ input[type="date"].field-input[readonly]::-webkit-calendar-picker-indicator {
   backdrop-filter: blur(8px);
 }
 
-.btn-secondary:hover   {
-  background: rgba(255,255,255,.85);
-  border-color: var(--sky-light);
-  box-shadow: 0 2px 10px rgba(74,162,219,.12);
-}
+.btn-secondary:hover   { background: rgba(255,255,255,.85); border-color: var(--sky-light); box-shadow: 0 2px 10px rgba(74,162,219,.12); }
 .btn-secondary:disabled { opacity: .55; cursor: not-allowed; }
 
 .btn-danger {
@@ -785,11 +877,7 @@ input[type="date"].field-input[readonly]::-webkit-calendar-picker-indicator {
   text-align: center;
 }
 
-.btn-add:hover {
-  background: var(--sky-mist);
-  border-color: var(--sky);
-  border-style: solid;
-}
+.btn-add:hover { background: var(--sky-mist); border-color: var(--sky); border-style: solid; }
 
 .btn-ghost {
   padding: 7px 13px;
@@ -826,6 +914,7 @@ input[type="date"].field-input[readonly]::-webkit-calendar-picker-indicator {
   .form-grid { grid-template-columns: 1fr; }
   .tab-btn .tab-label { display: none; }
   .tab-btn { padding: 10px 8px; }
+  .price-row { flex-wrap: wrap; }
 }
 `;
 
@@ -873,8 +962,16 @@ type EditableAvailabilitySlot = {
   id?: number; dia_semana: number; hora_inicio: string; hora_fin: string;
   duracion_minima_minutos: string; aviso_previo_horas: string; observaciones: string;
 };
-type EditableService = { id?: number; tipo: string; descripcion: string; };
+type EditableService = {
+  id?: number;
+  tipo: string;
+  descripcion: string;
+  precio_hora: string;
+  precio_oferta: string;
+  oferta_activa: boolean;
+};
 
+/* ══ NORMALIZATION HELPERS ═══════════════════════════════ */
 const normalizeAddresses = (items?: AddressProfile[] | null): EditableAddress[] =>
   (items ?? []).map((item) => ({
     id: item.id, label: item.label ?? '', address_line_1: item.address_line_1 ?? '',
@@ -896,14 +993,19 @@ const normalizeAvailabilitySlots = (items?: AvailabilitySlot[] | null): Editable
 const normalizeServices = (items?: ProfileService[] | null): EditableService[] =>
   SERVICE_TYPE_OPTIONS.map((option) => {
     const service = (items ?? []).find((item) => item.tipo === option.key);
-    return { id: service?.id, tipo: option.key, descripcion: service?.descripcion ?? '' };
+    return {
+      id: service?.id,
+      tipo: option.key,
+      descripcion: service?.descripcion ?? '',
+      precio_hora: service?.precio_hora != null ? String(service.precio_hora) : '',
+      precio_oferta: service?.precio_oferta != null ? String(service.precio_oferta) : '',
+      oferta_activa: Boolean(service?.oferta_activa),
+    };
   });
 
-const emptyAddress = (): EditableAddress => ({
-  label: '', address_line_1: '', address_line_2: '', neighborhood: '', reference: '', type: 'home', is_default: false,
-});
 const emptyAvailability = (): EditableAvailabilitySlot => ({
-  dia_semana: 1, hora_inicio: '08:00', hora_fin: '17:00', duracion_minima_minutos: '120', aviso_previo_horas: '24', observaciones: '',
+  dia_semana: 1, hora_inicio: '08:00', hora_fin: '17:00',
+  duracion_minima_minutos: '120', aviso_previo_horas: '24', observaciones: '',
 });
 
 const initialsOf = (v: string) =>
@@ -943,23 +1045,22 @@ export default function TQidoClientProfile() {
   const user = auth.user;
   const initialProfile = (user?.profile ?? null) as UserProfile | null;
 
-  const [savedProfile,        setSavedProfile]        = useState<UserProfile | null>(initialProfile);
-  const [completion,          setCompletion]           = useState<ProfileCompletion | null>((user?.profile_completion ?? null) as ProfileCompletion | null);
-  const [profileForm,         setProfileForm]          = useState({ user_id: Number(user?.id ?? 0), phone: user?.phone ?? '', fecha_nacimiento: initialProfile?.fecha_nacimiento ?? '', ciudad: initialProfile?.ciudad ?? '', direccion: initialProfile?.direccion ?? '' });
-  const [addresses,           setAddresses]            = useState<EditableAddress[]>(normalizeAddresses(initialProfile?.direcciones));
-  const [availabilitySlots,   setAvailabilitySlots]    = useState<EditableAvailabilitySlot[]>(normalizeAvailabilitySlots(initialProfile?.disponibilidades));
-  const [serviceDescription,  setServiceDescription]   = useState(initialProfile?.descripcion_general_servicio ?? '');
-  const [services,            setServices]             = useState<EditableService[]>(normalizeServices(initialProfile?.servicios));
-  const [activeTab,           setActiveTab]            = useState<Tab>('personal');
-  const [activeNav,           setActiveNav]            = useState('Inicio');
-  const [editing,             setEditing]              = useState(false);
-  const [saving,              setSaving]               = useState(false);
-  const [saveError,           setSaveError]            = useState('');
-  const [saveOk,              setSaveOk]               = useState('');
+  const [savedProfile,       setSavedProfile]      = useState<UserProfile | null>(initialProfile);
+  const [completion,         setCompletion]         = useState<ProfileCompletion | null>((user?.profile_completion ?? null) as ProfileCompletion | null);
+  const [profileForm,        setProfileForm]        = useState({ user_id: Number(user?.id ?? 0), phone: user?.phone ?? '', fecha_nacimiento: initialProfile?.fecha_nacimiento ?? '', ciudad: initialProfile?.ciudad ?? '', direccion: initialProfile?.direccion ?? '' });
+  const [addresses,          setAddresses]          = useState<EditableAddress[]>(normalizeAddresses(initialProfile?.direcciones));
+  const [availabilitySlots,  setAvailabilitySlots]  = useState<EditableAvailabilitySlot[]>(normalizeAvailabilitySlots(initialProfile?.disponibilidades));
+  const [serviceDescription, setServiceDescription] = useState(initialProfile?.descripcion_general_servicio ?? '');
+  const [services,           setServices]           = useState<EditableService[]>(normalizeServices(initialProfile?.servicios));
+  const [activeTab,          setActiveTab]          = useState<Tab>('personal');
+  const [activeNav,          setActiveNav]          = useState('Inicio');
+  const [editing,            setEditing]            = useState(false);
+  const [saving,             setSaving]             = useState(false);
+  const [applying,           setApplying]           = useState(false);
+  const [saveError,          setSaveError]          = useState('');
+  const [saveOk,             setSaveOk]             = useState('');
 
   const completedCount = Math.max(0, PROFILE_COMPLETION_FIELDS.length - (completion?.missing?.length ?? PROFILE_COMPLETION_FIELDS.length));
-
-  // First missing field name for the dropdown hint
   const nextMissingField = completion?.missing?.[0] ?? null;
 
   const resetForms = () => {
@@ -979,14 +1080,18 @@ export default function TQidoClientProfile() {
         body: JSON.stringify({
           ...profileForm,
           descripcion_general_servicio: serviceDescription,
-          services,
+          services: services.map((s) => ({
+            ...s,
+            precio_hora:   s.precio_hora   ? Number(s.precio_hora)   : null,
+            precio_oferta: s.precio_oferta ? Number(s.precio_oferta) : null,
+          })),
           addresses,
           availability_slots: availabilitySlots.map((slot) => ({
             ...slot,
             hora_inicio: normalizeTimeValue(slot.hora_inicio),
-            hora_fin: normalizeTimeValue(slot.hora_fin),
+            hora_fin:    normalizeTimeValue(slot.hora_fin),
             duracion_minima_minutos: slot.duracion_minima_minutos ? Number(slot.duracion_minima_minutos) : null,
-            aviso_previo_horas: slot.aviso_previo_horas ? Number(slot.aviso_previo_horas) : null,
+            aviso_previo_horas:      slot.aviso_previo_horas      ? Number(slot.aviso_previo_horas)      : null,
           })),
         }),
       });
@@ -1014,13 +1119,33 @@ export default function TQidoClientProfile() {
     }
   };
 
-  const handleMenuItemClick = (item: string) => {
-    // Navigate to section or handle menu action
-    if (item === 'Mi perfil') setActiveTab('personal');
+  /* ── Postularme handler ── */
+  const handleApply = async () => {
+    setApplying(true);
+    try {
+      const response = await fetch('/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setSaveError(data.message ?? 'No se pudo enviar la postulación.');
+        return;
+      }
+      setSaveOk(data.message ?? '¡Postulación enviada correctamente!');
+    } catch {
+      setSaveError('Hubo un problema de conexión. Inténtalo de nuevo.');
+    } finally {
+      setApplying(false);
+    }
   };
 
-  const handleLogout = () => {
-    router.post('/logout');
+  /* ── Update a single service field ── */
+  const updateService = (index: number, patch: Partial<EditableService>) =>
+    setServices((c) => c.map((item, i) => i === index ? { ...item, ...patch } : item));
+
+  const handleMenuItemClick = (item: string) => {
+    if (item === 'Mi perfil') setActiveTab('personal');
   };
 
   return (
@@ -1035,7 +1160,7 @@ export default function TQidoClientProfile() {
         activeNav={activeNav}
         onNavChange={setActiveNav}
         onMenuItemClick={handleMenuItemClick}
-        onLogout={handleLogout}
+        onLogout={() => router.post('/logout')}
       >
         <div className="profile-bg">
           <div className="profile-shell">
@@ -1081,14 +1206,15 @@ export default function TQidoClientProfile() {
                   ))}
                 </div>
 
+                {/* ── Sidebar action buttons ── */}
                 <div className="sidebar-actions">
                   {editing ? (
                     <>
-                      <button className="btn-danger" style={{ flex: 1 }} onClick={() => { resetForms(); setSaveError(''); setSaveOk(''); setEditing(false); }} disabled={saving}>
+                      <button className="btn-danger" style={{ width: '100%' }} onClick={() => { resetForms(); setSaveError(''); setSaveOk(''); setEditing(false); }} disabled={saving}>
                         Cancelar
                       </button>
-                      <button className="btn-primary" style={{ flex: 1 }} onClick={saveProfile} disabled={saving}>
-                        {saving ? 'Guardando…' : 'Guardar'}
+                      <button className="btn-primary" style={{ width: '100%' }} onClick={saveProfile} disabled={saving}>
+                        {saving ? 'Guardando…' : 'Guardar cambios'}
                       </button>
                     </>
                   ) : (
@@ -1096,6 +1222,16 @@ export default function TQidoClientProfile() {
                       ✏️ Editar perfil
                     </button>
                   )}
+
+                  {/* ── Postularme button ── */}
+                  <button
+                    className="btn-apply"
+                    onClick={handleApply}
+                    disabled={applying || saving}
+                  >
+                    <span className="btn-apply-dot" />
+                    {applying ? 'Enviando postulación…' : 'Postularme como cuidador'}
+                  </button>
                 </div>
               </div>
             </aside>
@@ -1165,11 +1301,16 @@ export default function TQidoClientProfile() {
                     <div className="section-group">
                       <div className="hint-box">
                         <span className="hint-icon">ℹ️</span>
-                        <span>Define una descripción general y una descripción específica para cada tipo de servicio que ofreces.</span>
+                        <span>Define una descripción general y configura el precio por hora para cada tipo de servicio. Activa la oferta si deseas aplicar una tarifa especial.</span>
                       </div>
+
+                      {/* Descripción general */}
                       <div className="list-item">
                         <div className="list-item-header">
-                          <div><div className="list-item-title">Descripción general</div><div className="list-item-sub">Se muestra en la parte superior de tu perfil público</div></div>
+                          <div>
+                            <div className="list-item-title">Descripción general</div>
+                            <div className="list-item-sub">Se muestra en la parte superior de tu perfil público</div>
+                          </div>
                         </div>
                         <div className="list-item-body">
                           <Field label="Descripción del servicio">
@@ -1177,24 +1318,105 @@ export default function TQidoClientProfile() {
                           </Field>
                         </div>
                       </div>
+
+                      {/* Tipos de servicio con precio y oferta */}
                       <div>
-                        <div className="section-divider"><span className="section-divider-label">Tipos de servicio</span><div className="section-divider-line" /></div>
+                        <div className="section-divider">
+                          <span className="section-divider-label">Tipos de servicio</span>
+                          <div className="section-divider-line" />
+                        </div>
                         <div className="item-list" style={{ marginTop: 14 }}>
                           {services.map((service, index) => {
                             const opt = SERVICE_TYPE_OPTIONS[index];
                             return (
                               <div className="list-item" key={service.tipo}>
+                                {/* Header del servicio */}
                                 <div className="list-item-header">
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <span style={{ fontSize: 22 }}>{opt?.icon}</span>
-                                    <div><div className="list-item-title">{opt?.label ?? service.tipo}</div><div className="list-item-sub">Tipo de servicio fijo</div></div>
+                                    <div>
+                                      <div className="list-item-title">{opt?.label ?? service.tipo}</div>
+                                      <div className="list-item-sub">
+                                        {service.precio_hora
+                                          ? `€${service.precio_hora}/h${service.oferta_activa && service.precio_oferta ? ` · Oferta €${service.precio_oferta}/h` : ''}`
+                                          : 'Sin precio configurado'}
+                                      </div>
+                                    </div>
                                   </div>
-                                  <span className="badge">{opt?.label ?? service.tipo}</span>
+                                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                    {service.oferta_activa && service.precio_oferta && (
+                                      <span className="oferta-badge">🏷️ Oferta activa</span>
+                                    )}
+                                    <span className="badge">{opt?.label ?? service.tipo}</span>
+                                  </div>
                                 </div>
+
+                                {/* Body del servicio */}
                                 <div className="list-item-body">
                                   <Field label="Descripción específica">
-                                    <textarea className="field-input" rows={3} value={service.descripcion} onChange={(e) => setServices((c) => c.map((item, i) => i === index ? { ...item, descripcion: e.target.value } : item))} readOnly={!editing} />
+                                    <textarea
+                                      className="field-input"
+                                      rows={3}
+                                      value={service.descripcion}
+                                      onChange={(e) => updateService(index, { descripcion: e.target.value })}
+                                      readOnly={!editing}
+                                    />
                                   </Field>
+
+                                  {/* Precio por hora + botón oferta */}
+                                  <div className="price-row">
+                                    <div style={{ flex: 1 }}>
+                                      <Field label="Precio por hora">
+                                        <div className="price-input-wrap">
+                                          <span className="price-symbol">€</span>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            step="0.5"
+                                            className="field-input"
+                                            placeholder="0.00"
+                                            value={service.precio_hora}
+                                            onChange={(e) => updateService(index, { precio_hora: e.target.value })}
+                                            readOnly={!editing}
+                                          />
+                                        </div>
+                                      </Field>
+                                    </div>
+
+                                    {/* Botón activar/desactivar oferta */}
+                                    <div style={{ paddingBottom: 0 }}>
+                                      <div className="field-label" style={{ marginBottom: 5 }}>Precio oferta</div>
+                                      <button
+                                        className={`btn-oferta ${service.oferta_activa ? 'on' : 'off'}`}
+                                        onClick={() => editing && updateService(index, { oferta_activa: !service.oferta_activa })}
+                                        disabled={!editing}
+                                        type="button"
+                                      >
+                                        {service.oferta_activa ? '🏷️ Oferta activa' : '+ Activar oferta'}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Campo precio de oferta (animado) */}
+                                  <div className={`oferta-field-wrap${service.oferta_activa ? ' open' : ''}`}>
+                                    <div style={{ paddingTop: 10 }}>
+                                      <Field label="Precio de oferta por hora">
+                                        <div className="price-input-wrap">
+                                          <span className="price-symbol">€</span>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            step="0.5"
+                                            className="field-input"
+                                            placeholder="Precio especial…"
+                                            value={service.precio_oferta}
+                                            onChange={(e) => updateService(index, { precio_oferta: e.target.value })}
+                                            readOnly={!editing}
+                                          />
+                                        </div>
+                                      </Field>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             );
@@ -1283,7 +1505,6 @@ export default function TQidoClientProfile() {
                     </div>
                   )}
 
-
                   {/* ─ PAGOS ─ */}
                   {activeTab === 'pagos' && (
                     <div className="section-group">
@@ -1309,6 +1530,7 @@ export default function TQidoClientProfile() {
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </CarerLayout>

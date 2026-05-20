@@ -6,28 +6,26 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
-// ✅ Landing page pública - Ruta principal
+// ✅ Landing page pública
 Route::get('/', function () {
     return Inertia::render('landing_page/Home', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
 
-// ✅ Perfiles protegidos por autenticación y rol
-Route::middleware(['auth', 'role:carer'])->group(function () {
-    Route::get('/profile/carer', function () {
-        return Inertia::render('profile/carer/carer');
-    })->name('profile.carer.preview');
-});
+// ✅ Perfiles públicos (sin auth)
+Route::get('/profile/carer', function () {
+    return Inertia::render('profile/carer/carer');
+})->name('profile.carer.preview');
 
-Route::middleware(['auth', 'role:customer'])->group(function () {
-    Route::get('/profile/customer', function () {
-        return Inertia::render('profile/costumer/costumer');
-    })->name('profile.customer.preview');
-});
+Route::get('/profile/customer', function () {
+    return Inertia::render('profile/costumer/costumer');
+})->name('profile.customer.preview');
 
+// ✅ Dashboards públicos (sin auth)
 Route::prefix('dashboard')->group(function () {
-    Route::middleware(['auth', 'role:carer'])->prefix('carer')->group(function () {
+
+    Route::prefix('carer')->group(function () {
         Route::get('/', function () {
             return Inertia::render('dashboard/carer/dashboard');
         })->name('dashboard.carer.preview');
@@ -41,7 +39,7 @@ Route::prefix('dashboard')->group(function () {
         })->name('dashboard.carer.clientes');
     });
 
-    Route::middleware(['auth', 'role:customer'])->prefix('customer')->group(function () {
+    Route::prefix('customer')->group(function () {
         Route::get('/', function () {
             return Inertia::render('dashboard/customer/dashboard');
         })->name('dashboard.customer.preview');
@@ -56,11 +54,12 @@ Route::prefix('dashboard')->group(function () {
     });
 });
 
+// ✅ Perfil público
 Route::get('/profile/public', function () {
     return Inertia::render('profile_public/profile_carer');
 })->name('profile.public');
 
-// ✅ Registros personalizados
+// ✅ Auth (solo para guests)
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return Inertia::render('auth/login');
@@ -86,8 +85,6 @@ Route::middleware('guest')->group(function () {
             ->name('register.social.complete');
     });
 });
-
-
 
 Route::get('/auth/{provider}', [SocialController::class, 'redirect'])->name('api.social.redirect');
 Route::get('/auth/{provider}/callback', [SocialController::class, 'callback'])->name('api.social.callback');
