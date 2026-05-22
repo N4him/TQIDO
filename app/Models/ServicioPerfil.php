@@ -30,4 +30,9 @@ class ServicioPerfil extends Model
     {
         return $this->belongsTo(Profile::class);
     }
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class, 'servicio_perfil_id');
+    }
 }

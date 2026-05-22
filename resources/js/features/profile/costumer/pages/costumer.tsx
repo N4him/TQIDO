@@ -831,9 +831,11 @@ export default function TQidoClientProfile() {
     city:     profileForm.ciudad || savedProfile?.ciudad || 'Sin ciudad',
   };
 
-  const navLinks: NavLink[] = ['Explorar', 'Mis reservas', 'Favoritos'].map((label) => ({
-    label, active: activeNav === label, onClick: () => setActiveNav(label),
-  }));
+  const navLinks: NavLink[] = [
+    { label: 'Explorar', active: activeNav === 'Explorar', onClick: () => { setActiveNav('Explorar'); router.visit('/dashboard/customer'); } },
+    { label: 'Mis reservas', active: activeNav === 'Mis reservas', onClick: () => { setActiveNav('Mis reservas'); router.visit('/dashboard/customer/reservas'); } },
+    { label: 'Favoritos', active: activeNav === 'Favoritos', onClick: () => { setActiveNav('Favoritos'); router.visit('/dashboard/customer/favoritos'); } },
+  ];
 
   const handleLogout = () => {
     router.post('/logout');

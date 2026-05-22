@@ -1,10 +1,23 @@
-import { useState, useEffect } from 'react';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import CarerLayout from '@/features/layouts/carer_layout';
 import type { SharedData, User } from '@/types';
 
 const css = `
-/* ═══════════════════════ HERO ═══════════════════════ */
+:root {
+  --t100: var(--ink);
+  --t80: var(--ink-80);
+  --t55: var(--ink-55);
+  --t35: var(--ink-35);
+  --t15: var(--ink-15);
+  --t08: var(--ink-08);
+  --t05: rgba(13,47,68,0.05);
+  --blue: var(--sky-deep);
+  --blue-lt: var(--sky);
+  --blue-ltr: var(--sky-light);
+  --bg-2: var(--sky-frost);
+  --bg: var(--white);
+}
 .hero {
   background:#EBF6FD; border:1px solid var(--t08);
   border-radius:var(--r-xl); padding:28px 32px;
@@ -26,7 +39,6 @@ const css = `
 .hero-status-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
 .hero-status-text { font-size:13px; color:var(--t55); }
 .hero-status-text strong { color:var(--t80); font-weight:500; }
-
 .toggle-wrap {
   display:flex; align-items:center; gap:12px;
   background:var(--bg-2); border:1px solid var(--t15);
@@ -61,18 +73,16 @@ const css = `
 .hstat-num.amber { color:var(--amber);    }
 .hstat-label { font-size:10px; color:var(--t35); line-height:1.4; }
 
-/* ═══════════════════════ LAYOUT ═══════════════════════ */
-.two-col    { display:grid; grid-template-columns:1fr 340px; gap:16px; margin-bottom:16px; }
+.two-col    { display:grid; grid-template-columns:1fr 360px; gap:16px; margin-bottom:16px; }
 .bottom-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
 
-/* ═══════════════════════ PRÓXIMO SERVICIO ═══════════════════════ */
 .next-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--sh-card); }
 .next-header { background:linear-gradient(135deg, var(--blue), var(--blue-lt)); padding:22px 26px 18px; position:relative; overflow:hidden; }
 .next-header::after { content:''; position:absolute; top:-40px; right:-20px; width:180px; height:180px; background:radial-gradient(circle, rgba(255,255,255,0.10), transparent 65%); }
 .next-eyebrow { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.65); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
 .next-eyebrow-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.7); }
 .next-time { font-family:var(--ff-d); font-size:36px; font-weight:300; color:var(--t100); line-height:1; margin-bottom:4px; }
-.next-date { font-size:13px; color:rgba(255,255,255,0.65); }
+.next-date { font-size:13px; color:rgba(255,255,255,0.65); text-transform:capitalize; }
 .countdown { position:absolute; top:22px; right:26px; text-align:right; }
 .countdown-num { font-family:var(--ff-d); font-size:42px; font-weight:300; color:rgba(255,255,255,0.90); line-height:1; }
 .countdown-label { font-size:10px; color:rgba(255,255,255,0.50); letter-spacing:0.1em; }
@@ -83,19 +93,20 @@ const css = `
 .next-client-detail { font-size:12px; color:var(--t55); line-height:1.5; font-weight:300; }
 .next-info-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
 .info-chip { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:var(--r-full); background:var(--t05); border:1px solid var(--t08); font-size:11.5px; color:var(--t55); }
-.next-actions { display:flex; gap:8px; }
+.next-notes { margin:0 0 18px; padding:12px 14px; border-radius:var(--r-md); background:rgba(90,150,212,0.08); border:1px solid rgba(90,150,212,0.16); font-size:12px; color:var(--t55); line-height:1.6; }
+.next-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.next-empty { padding:32px 24px; text-align:center; color:var(--t35); font-size:13px; }
 
-/* ═══════════════════════ SOLICITUDES ═══════════════════════ */
 .requests-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--sh-card); }
 .requests-head { padding:18px 20px 14px; border-bottom:1px solid var(--t08); display:flex; align-items:center; justify-content:space-between; }
 .requests-title { font-family:var(--ff-d); font-size:17px; color:var(--t100); font-weight:300; }
 .requests-badge { background:var(--amber); color:var(--bg); font-size:9.5px; font-weight:700; padding:2px 9px; border-radius:var(--r-full); }
-.request-item { padding:14px 20px; border-bottom:1px solid var(--t05); transition:background 0.15s; }
+.request-item { padding:14px 20px; border-bottom:1px solid var(--t05); transition:background 0.15s; cursor:pointer; }
 .request-item:last-child { border-bottom:none; }
 .request-item:hover { background:var(--t05); }
 .req-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
 .req-client { display:flex; align-items:center; gap:10px; }
-.req-av { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--t100); flex-shrink:0; }
+.req-av { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
 .req-name { font-size:13px; font-weight:500; color:var(--t80); margin-bottom:1px; }
 .req-type { font-size:11px; color:var(--t35); }
 .req-price { font-family:var(--ff-d); font-size:19px; color:var(--blue-lt); }
@@ -107,34 +118,25 @@ const css = `
 .btn-accept:hover { background:rgba(34,197,94,0.22); }
 .btn-decline { padding:8px 12px; border-radius:var(--r-sm); background:var(--red-bg); color:var(--red); border:1px solid rgba(239,68,68,0.2); font-family:var(--ff-s); font-size:11.5px; font-weight:600; cursor:pointer; transition:all 0.15s; }
 .btn-decline:hover { background:rgba(239,68,68,0.22); }
+.req-expand { margin-top:12px; padding-top:12px; border-top:1px solid var(--t08); display:grid; gap:8px; }
+.req-expand-line { font-size:11.5px; color:var(--t55); line-height:1.5; }
+.req-expand-line strong { color:var(--t80); }
+.req-note { background:rgba(90,150,212,0.08); border:1px solid rgba(90,150,212,0.16); border-radius:var(--r-sm); padding:10px 12px; font-size:11.5px; color:var(--t55); line-height:1.6; }
 
-/* ═══════════════════════ AGENDA ═══════════════════════ */
 .agenda-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
-.week-row { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
-.day-col { text-align:center; }
-.day-name { font-size:9px; color:var(--t35); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:7px; }
-.day-num { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:500; color:var(--t55); margin:0 auto 7px; cursor:pointer; transition:all 0.15s; }
-.day-num:hover { background:var(--t08); color:var(--t80); }
-.day-num.today { background:var(--blue-lt); color:var(--bg); font-weight:700; box-shadow:0 2px 12px rgba(90,150,212,0.45); }
-.day-num.has-event { color:var(--t80); }
-.day-dots { display:flex; justify-content:center; gap:3px; min-height:8px; }
-.day-dot { width:5px; height:5px; border-radius:50%; }
-.day-dot.booked  { background:var(--blue-lt); }
-.day-dot.request { background:var(--amber); }
-.day-slot-list { margin-top:18px; display:flex; flex-direction:column; gap:8px; }
+.day-slot-list { display:flex; flex-direction:column; gap:8px; }
 .slot { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--r-md); background:var(--t05); border:1px solid var(--t08); transition:all 0.15s; cursor:pointer; }
 .slot:hover { background:var(--t08); border-color:var(--t15); }
 .slot-bar { width:3px; border-radius:2px; align-self:stretch; min-height:34px; flex-shrink:0; }
 .slot-bar.confirmed { background:var(--blue-lt); }
 .slot-bar.pending   { background:var(--amber); }
-.slot-time { font-size:12px; font-weight:500; color:var(--t55); min-width:90px; }
+.slot-time { font-size:12px; font-weight:500; color:var(--t55); min-width:100px; }
 .slot-name { font-size:13px; font-weight:500; color:var(--t80); flex:1; }
 .slot-type { font-size:11px; color:var(--t35); }
 .slot-badge { padding:2px 9px; border-radius:var(--r-full); font-size:9.5px; font-weight:600; }
 .slot-badge.confirmed { background:rgba(90,150,212,0.12); color:var(--blue-lt); border:1px solid rgba(90,150,212,0.25); }
 .slot-badge.pending   { background:var(--amber-bg); color:var(--amber); border:1px solid rgba(245,166,35,0.25); }
 
-/* ═══════════════════════ VALORACIONES ═══════════════════════ */
 .reviews-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
 .reviews-header { display:flex; align-items:center; gap:22px; margin-bottom:18px; }
 .review-score { font-family:var(--ff-d); font-size:54px; font-weight:300; color:var(--t100); line-height:1; }
@@ -156,7 +158,6 @@ const css = `
 .rev-stars { font-size:11px; color:var(--amber); margin-bottom:4px; }
 .rev-text { font-size:12px; color:var(--t55); line-height:1.6; font-weight:300; }
 
-/* ═══════════════════════ GANANCIAS ═══════════════════════ */
 .earnings-card { background:#EBF6FD; border:1px solid var(--t08); border-radius:var(--r-xl); padding:22px 24px; box-shadow:var(--sh-card); }
 .earn-total { display:flex; align-items:baseline; gap:5px; margin-bottom:4px; }
 .earn-currency { font-size:20px; color:var(--blue-ltr); }
@@ -173,7 +174,6 @@ const css = `
 .earn-pending-label { font-size:12px; color:var(--amber); }
 .earn-pending-val { font-family:var(--ff-d); font-size:17px; color:var(--amber); }
 
-/* ═══════════════════════ ANIMATIONS ═══════════════════════ */
 @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
 .hero                        { animation:fadeUp 0.5s cubic-bezier(0.22,0.68,0,1) both 0.04s; }
 .two-col > *:nth-child(1)    { animation:fadeUp 0.5s cubic-bezier(0.22,0.68,0,1) both 0.12s; }
@@ -181,7 +181,6 @@ const css = `
 .agenda-card                 { animation:fadeUp 0.45s cubic-bezier(0.22,0.68,0,1) both 0.24s; }
 .bottom-row > *:nth-child(1) { animation:fadeUp 0.45s cubic-bezier(0.22,0.68,0,1) both 0.28s; }
 .bottom-row > *:nth-child(2) { animation:fadeUp 0.45s cubic-bezier(0.22,0.68,0,1) both 0.34s; }
-
 @media (max-width:960px) {
   .two-col, .bottom-row { grid-template-columns:1fr; }
   .hero { grid-template-columns:1fr; }
@@ -189,280 +188,345 @@ const css = `
 }
 `;
 
-/* ── DATA ── */
-const TODAY_SLOTS = [
-    { time: '09:00–12:00', name: 'José Fernández', type: 'Adulto mayor · 3h', status: 'confirmed' },
-    { time: '16:00–19:00', name: 'Lucas Martín',   type: 'Niño · 3h',         status: 'confirmed' },
-];
-
-const WEEK = [
-    { name: 'Lun', num: 23, today: false, dots: ['booked'] },
-    { name: 'Mar', num: 24, today: false, dots: ['booked', 'booked'] },
-    { name: 'Mié', num: 25, today: true,  dots: ['booked', 'booked'] },
-    { name: 'Jue', num: 26, today: false, dots: ['request'] },
-    { name: 'Vie', num: 27, today: false, dots: ['booked'] },
-    { name: 'Sáb', num: 28, today: false, dots: [] },
-    { name: 'Dom', num: 29, today: false, dots: [] },
-];
-
-const REQUESTS_DATA = [
-    { av: 'RP', bg: 'linear-gradient(135deg,#1a4a8a,#5a96d4)', name: 'Rosa Pérez',   type: 'Adulto mayor · Alzheimer', price: '€21/h', hours: '4h', date: 'Vie 27 jun', time: '10:00–14:00' },
-    { av: 'TG', bg: 'linear-gradient(135deg,#0e2d5a,#2e6fba)', name: 'Tomás García', type: 'Niño · 2 años',            price: '€16/h', hours: '5h', date: 'Sáb 28 jun', time: '09:00–14:00' },
-];
-
 const REVIEWS = [
-    { name: 'Elena Soler',    date: 'Hace 3 días', stars: 5, text: 'María es extraordinaria. Mi madre la adora y siempre llega puntual. La contrataré de nuevo sin dudar.' },
-    { name: 'Pedro Ruiz',     date: 'Hace 1 sem',  stars: 5, text: 'Muy profesional y cariñosa con mi abuelo. Se nota que lo hace con vocación.' },
-    { name: 'Ana Villanueva', date: 'Hace 2 sem',  stars: 4, text: 'Muy buena atención. Solo un pequeño retraso la primera vez, pero desde entonces perfecta.' },
+  { name: 'Elena Soler', date: 'Hace 3 días', stars: 5, text: 'Gran experiencia. Muy profesional, puntual y cercana durante todo el servicio.' },
+  { name: 'Pedro Ruiz', date: 'Hace 1 sem', stars: 5, text: 'Muy buena comunicación y excelente cuidado durante toda la jornada.' },
+  { name: 'Ana Villanueva', date: 'Hace 2 sem', stars: 4, text: 'Todo salió muy bien. Repetiríamos sin problema.' },
 ];
 
 const RATING_BARS = [5, 4, 3, 2, 1];
 const RATING_VALS = [18, 5, 1, 0, 0];
-const TOTAL_REV   = RATING_VALS.reduce((a, b) => a + b, 0);
+const TOTAL_REV = RATING_VALS.reduce((a, b) => a + b, 0);
+
+type PendingRequest = {
+  id: number;
+  av: string;
+  bg: string;
+  name: string;
+  type: string;
+  price: string;
+  hours: string;
+  date: string;
+  time: string;
+  address: string;
+  notes: string | null;
+  estado: string;
+};
+
+type NextService = {
+  id: number;
+  time: string;
+  date: string;
+  countdown_minutes: number;
+  customer_name: string;
+  customer_initials: string;
+  customer_phone?: string | null;
+  customer_summary: string;
+  service_description: string;
+  duration: string;
+  address: string;
+  notes?: string | null;
+  total: number;
+  status: string;
+} | null;
+
+type TodaySlot = {
+  id: number;
+  time: string;
+  name: string;
+  type: string;
+  status: 'confirmed' | 'pending';
+};
+
+type CarerDashboardProps = SharedData & {
+  pendingRequests: PendingRequest[];
+  nextService: NextService;
+  todaySlots: TodaySlot[];
+  carerStats: {
+    today_earnings: number;
+    today_services: number;
+    pending_requests: number;
+    rating: number;
+    week_completed_hours: number;
+    pending_amount: number;
+  };
+};
 
 const initialsOf = (value: string) =>
-    value.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'TU';
+  value.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'TU';
 
 const firstNameOf = (value: string) => value.split(' ').filter(Boolean)[0] ?? 'perfil';
 
 const locationOf = (user?: User | null) =>
-    user?.profile?.ciudad || user?.profile?.direccion || user?.specialty || 'Tu ciudad';
+  user?.profile?.ciudad || user?.profile?.direccion || user?.specialty || 'Tu ciudad';
 
-function useCountdown() {
-    const [mins, setMins] = useState(47);
-    useEffect(() => {
-        const id = setInterval(() => setMins((m) => (m > 0 ? m - 1 : 0)), 60000);
-        return () => clearInterval(id);
-    }, []);
-    return mins;
-}
+const currency = (value: number) => `€${value.toFixed(2)}`;
 
 export default function CarerDashboard() {
-    const { auth } = usePage<SharedData>().props;
-    const user = auth.user;
-    const carerName = user?.name ?? 'Tu perfil';
-    const carerInitials = initialsOf(carerName);
-    const carerFirstName = firstNameOf(carerName);
-    const carerLocation = locationOf(user);
-    const profileCompletion = user?.profile_completion?.percentage ?? 0;
+  const { auth, pendingRequests, nextService, todaySlots, carerStats } = usePage<CarerDashboardProps>().props;
+  const user = auth.user;
+  const carerName = user?.name ?? 'Tu perfil';
+  const carerInitials = initialsOf(carerName);
+  const carerFirstName = firstNameOf(carerName);
+  const carerLocation = locationOf(user);
+  const profileCompletion = user?.profile_completion?.percentage ?? 0;
 
-    const [online,   setOnline]   = useState(true);
-    const [activeNav, setActiveNav] = useState('Inicio');
-    const [requests, setRequests] = useState(REQUESTS_DATA);
-    const countdown = useCountdown();
+  const [online, setOnline] = useState(true);
+  const [activeNav, setActiveNav] = useState('Inicio');
+  const [expandedRequestId, setExpandedRequestId] = useState<number | null>(pendingRequests[0]?.id ?? null);
+  const [processingRequestId, setProcessingRequestId] = useState<number | null>(null);
 
-    const acceptReq  = (name: string) => setRequests((r) => r.filter((x) => x.name !== name));
-    const declineReq = (name: string) => setRequests((r) => r.filter((x) => x.name !== name));
-    const starsStr   = (n: number)    => '★'.repeat(n) + '☆'.repeat(5 - n);
+  const heroDate = useMemo(
+    () => new Date().toLocaleDateString('es-CO', { weekday: 'long', day: '2-digit', month: 'short' }),
+    []
+  );
 
-    return (
-        <>
-            <style>{css}</style>
-            <CarerLayout
-                initials={carerInitials}
-                userName={carerName}
-                userEmail={user?.email ?? 'Sin correo'}
-                profileCompletion={profileCompletion}
-                activeNav={activeNav}
-                onNavChange={setActiveNav}
-            >
+  const handleRequestAction = (id: number, action: 'aceptar' | 'rechazar') => {
+    setProcessingRequestId(id);
 
-                {/* HERO */}
-                <div className="hero">
-                    <div className="hero-left">
-                        <div className="hero-greeting">Miércoles 25 jun · {carerLocation}</div>
-                        <div className="hero-name">Hola, <em>{carerFirstName}</em> 👋</div>
-                        <div className="hero-status-row">
-                            <div className={`toggle-wrap${online ? ' online' : ''}`} onClick={() => setOnline((o) => !o)}>
-                                <div className="pulse-dot" />
-                                <span className="toggle-label-text">{online ? 'Disponible' : 'No disponible'}</span>
-                                <div className="toggle-track"><div className="toggle-thumb" /></div>
-                            </div>
-                            <div className="hero-status-text">
-                                {online
-                                    ? <><strong>Recibiendo solicitudes</strong> · los clientes pueden encontrarte</>
-                                    : 'No recibirás nuevas solicitudes'}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="hero-stats">
-                        <div className="hstat"><div className="hstat-num blue">€{6 * 18}</div><div className="hstat-label">Ganancias<br />de hoy</div></div>
-                        <div className="hstat"><div className="hstat-num">2</div><div className="hstat-label">Servicios<br />hoy</div></div>
-                        <div className="hstat"><div className="hstat-num amber">{requests.length}</div><div className="hstat-label">Solicitudes<br />pendientes</div></div>
-                        <div className="hstat"><div className="hstat-num green">4.9</div><div className="hstat-label">Valoración<br />media</div></div>
-                    </div>
+    router.patch(`/dashboard/carer/solicitudes/${id}/${action}`, {}, {
+      preserveScroll: true,
+      onFinish: () => setProcessingRequestId(null),
+    });
+  };
+
+  const handleNextServiceAction = (action: 'iniciar' | 'completar') => {
+    if (!nextService) {
+      return;
+    }
+
+    router.patch(`/dashboard/carer/solicitudes/${nextService.id}/${action}`, {}, {
+      preserveScroll: true,
+    });
+  };
+
+  const starsStr = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
+
+  return (
+    <>
+      <style>{css}</style>
+      <CarerLayout
+        initials={carerInitials}
+        userName={carerName}
+        userEmail={user?.email ?? 'Sin correo'}
+        profileCompletion={profileCompletion}
+        activeNav={activeNav}
+        onNavChange={setActiveNav}
+        onLogout={() => router.post('/logout')}
+      >
+        <div className="hero">
+          <div className="hero-left">
+            <div className="hero-greeting">{heroDate} · {carerLocation}</div>
+            <div className="hero-name">Hola, <em>{carerFirstName}</em> 👋</div>
+            <div className="hero-status-row">
+              <div className={`toggle-wrap${online ? ' online' : ''}`} onClick={() => setOnline((value) => !value)}>
+                <div className="pulse-dot" />
+                <span className="toggle-label-text">{online ? 'Disponible' : 'No disponible'}</span>
+                <div className="toggle-track"><div className="toggle-thumb" /></div>
+              </div>
+              <div className="hero-status-text">
+                {online
+                  ? <><strong>Recibiendo solicitudes</strong> · tus clientes pueden encontrarte</>
+                  : 'No recibirás nuevas solicitudes'}
+              </div>
+            </div>
+          </div>
+          <div className="hero-stats">
+            <div className="hstat"><div className="hstat-num blue">{currency(carerStats.today_earnings)}</div><div className="hstat-label">Ganancias<br />de hoy</div></div>
+            <div className="hstat"><div className="hstat-num">{carerStats.today_services}</div><div className="hstat-label">Servicios<br />hoy</div></div>
+            <div className="hstat"><div className="hstat-num amber">{carerStats.pending_requests}</div><div className="hstat-label">Solicitudes<br />pendientes</div></div>
+            <div className="hstat"><div className="hstat-num green">{carerStats.rating.toFixed(1)}</div><div className="hstat-label">Valoración<br />media</div></div>
+          </div>
+        </div>
+
+        <div className="two-col">
+          <div className="next-card">
+            <div className="next-header">
+              <div className="next-eyebrow"><div className="next-eyebrow-dot" />Próximo servicio</div>
+              <div className="next-time">{nextService?.time ?? '--:--'}</div>
+              <div className="next-date">{nextService?.date ?? 'Sin servicios confirmados'}</div>
+              {nextService && (
+                <div className="countdown">
+                  <div className="countdown-num">{Math.max(0, nextService.countdown_minutes)}</div>
+                  <div className="countdown-label">MIN RESTANTES</div>
                 </div>
+              )}
+            </div>
 
-                {/* ROW 1 */}
-                <div className="two-col">
-                    <div className="next-card">
-                        <div className="next-header">
-                            <div className="next-eyebrow"><div className="next-eyebrow-dot" />Próximo servicio</div>
-                            <div className="next-time">09:00</div>
-                            <div className="next-date">Hoy · miércoles 25 de junio</div>
-                            <div className="countdown">
-                                <div className="countdown-num">{countdown}</div>
-                                <div className="countdown-label">MIN RESTANTES</div>
-                            </div>
-                        </div>
-                        <div className="next-body">
-                            <div className="next-client">
-                                <div className="next-av" style={{ background: 'linear-gradient(135deg,#0e2d5a,#2e6fba)' }}>JF</div>
-                                <div>
-                                    <div className="next-client-name">José Fernández</div>
-                                    <div className="next-client-detail">Adulto mayor · 82 años<br />Alzheimer leve · medicación</div>
-                                </div>
-                            </div>
-                            <div className="next-info-row">
-                                <div className="info-chip"><span>⏱</span> 3 horas</div>
-                                <div className="info-chip"><span>📍</span> C/ Serrano 42</div>
-                                <div className="info-chip"><span>💰</span> €54</div>
-                            </div>
-                            <div className="next-actions">
-                                <button className="btn-primary">Ver instrucciones</button>
-                                <button className="btn-secondary">📞 Llamar</button>
-                                <button className="btn-secondary">🗺 Ruta</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="requests-card">
-                        <div className="requests-head">
-                            <div className="requests-title">Solicitudes</div>
-                            {requests.length > 0 && <span className="requests-badge">{requests.length} nuevas</span>}
-                        </div>
-                        {requests.length === 0 ? (
-                            <div style={{ padding: '36px 20px', textAlign: 'center', color: 'var(--t35)', fontSize: 13 }}>
-                                No hay solicitudes pendientes
-                            </div>
-                        ) : requests.map((r) => (
-                            <div className="request-item" key={r.name}>
-                                <div className="req-top">
-                                    <div className="req-client">
-                                        <div className="req-av" style={{ background: r.bg }}>{r.av}</div>
-                                        <div><div className="req-name">{r.name}</div><div className="req-type">{r.type}</div></div>
-                                    </div>
-                                    <div className="req-price">{r.price}<span>/h</span></div>
-                                </div>
-                                <div className="req-details">
-                                    <span className="req-chip">📅 {r.date}</span>
-                                    <span className="req-chip">🕐 {r.time}</span>
-                                    <span className="req-chip">⏱ {r.hours}</span>
-                                </div>
-                                <div className="req-btns">
-                                    <button className="btn-accept" onClick={() => acceptReq(r.name)}>✓ Aceptar</button>
-                                    <button className="btn-decline" onClick={() => declineReq(r.name)}>✕ Rechazar</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+            {nextService ? (
+              <div className="next-body">
+                <div className="next-client">
+                  <div className="next-av" style={{ background: 'linear-gradient(135deg,#0e2d5a,#2e6fba)' }}>{nextService.customer_initials}</div>
+                  <div>
+                    <div className="next-client-name">{nextService.customer_name}</div>
+                    <div className="next-client-detail">{nextService.customer_summary}<br />{nextService.service_description}</div>
+                  </div>
                 </div>
-
-                {/* AGENDA */}
-                <div className="agenda-card">
-                    <div className="sec-title">Agenda de la semana</div>
-                    <div className="week-row">
-                        {WEEK.map((d) => (
-                            <div className="day-col" key={d.name}>
-                                <div className="day-name">{d.name}</div>
-                                <div className={`day-num${d.today ? ' today' : d.dots.length ? ' has-event' : ''}`}>{d.num}</div>
-                                <div className="day-dots">
-                                    {d.dots.map((dot, i) => <div key={i} className={`day-dot ${dot}`} />)}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="day-slot-list">
-                        <div style={{ fontSize: 10, color: 'var(--t35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Servicios de hoy</div>
-                        {TODAY_SLOTS.map((s) => (
-                            <div className="slot" key={s.name}>
-                                <div className={`slot-bar ${s.status}`} />
-                                <div className="slot-time">{s.time}</div>
-                                <div style={{ flex: 1 }}>
-                                    <div className="slot-name">{s.name}</div>
-                                    <div className="slot-type">{s.type}</div>
-                                </div>
-                                <div className={`slot-badge ${s.status}`}>{s.status === 'confirmed' ? 'Confirmado' : 'Pendiente'}</div>
-                            </div>
-                        ))}
-                    </div>
+                <div className="next-info-row">
+                  <div className="info-chip"><span>⏱</span> {nextService.duration}</div>
+                  <div className="info-chip"><span>📍</span> {nextService.address}</div>
+                  <div className="info-chip"><span>💰</span> {currency(nextService.total)}</div>
                 </div>
-
-                {/* ROW 2 */}
-                <div className="bottom-row">
-                    <div className="reviews-card">
-                        <div className="sec-title">Mis valoraciones</div>
-                        <div className="reviews-header">
-                            <div>
-                                <div className="review-score">4<em>.9</em></div>
-                                <div className="review-stars">★★★★★</div>
-                                <div className="review-count">{TOTAL_REV} reseñas</div>
-                            </div>
-                            <div className="review-bars">
-                                {RATING_BARS.map((n, i) => (
-                                    <div className="rbar-row" key={n}>
-                                        <span className="rbar-num">{n}</span>
-                                        <div className="rbar-track">
-                                            <div className="rbar-fill" style={{ width: `${TOTAL_REV > 0 ? (RATING_VALS[i] / TOTAL_REV * 100) : 0}%` }} />
-                                        </div>
-                                        <span className="rbar-count">{RATING_VALS[i]}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="review-list">
-                            {REVIEWS.map((r) => (
-                                <div className="review-item" key={r.name}>
-                                    <div className="rev-top">
-                                        <span className="rev-name">{r.name}</span>
-                                        <span className="rev-date">{r.date}</span>
-                                    </div>
-                                    <div className="rev-stars">{starsStr(r.stars)}</div>
-                                    <div className="rev-text">{r.text}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="earnings-card">
-                        <div className="sec-title">Ganancias</div>
-                        <div className="earn-total">
-                            <span className="earn-currency">€</span>
-                            <span className="earn-num">108</span>
-                        </div>
-                        <div className="earn-period">Esta semana · 6 horas completadas</div>
-                        <div className="earn-breakdown">
-                            <div className="earn-sublabel">Desglose semanal</div>
-                            {[
-                                { label: 'Lunes',     dot: 'var(--blue-lt)', val: '€54' },
-                                { label: 'Martes',    dot: 'var(--blue-lt)', val: '€54' },
-                                { label: 'Miércoles', dot: 'var(--amber)',   val: '€108 (pendiente)' },
-                            ].map((e) => (
-                                <div className="earn-row" key={e.label}>
-                                    <span className="earn-row-label">
-                                        <span className="earn-dot" style={{ background: e.dot }} />
-                                        {e.label}
-                                    </span>
-                                    <span className="earn-row-val" style={{ fontSize: 13, color: 'var(--t55)' }}>{e.val}</span>
-                                </div>
-                            ))}
-                            <div className="earn-divider" />
-                            <div className="earn-row">
-                                <span className="earn-row-label" style={{ color: 'var(--t80)', fontWeight: 500 }}>Total cobrado</span>
-                                <span className="earn-row-val">€108</span>
-                            </div>
-                        </div>
-                        <div className="earn-pending">
-                            <span className="earn-pending-label">⏳ Pendiente de cobro</span>
-                            <span className="earn-pending-val">€108</span>
-                        </div>
-                        <div style={{ marginTop: 14 }}>
-                            <button className="btn-primary" style={{ width: '100%' }}>Ver historial completo</button>
-                        </div>
-                    </div>
+                {nextService.notes && (
+                  <div className="next-notes">
+                    <strong>Notas:</strong> {nextService.notes}
+                  </div>
+                )}
+                <div className="next-actions">
+                  {nextService.status === 'aceptada' && (
+                    <button className="btn-primary" onClick={() => handleNextServiceAction('iniciar')}>Iniciar servicio</button>
+                  )}
+                  {nextService.status === 'en_curso' && (
+                    <button className="btn-primary" onClick={() => handleNextServiceAction('completar')}>Completar servicio</button>
+                  )}
+                  {nextService.customer_phone && (
+                    <button className="btn-secondary" onClick={() => window.open(`tel:${nextService.customer_phone}`, '_self')}>📞 Llamar</button>
+                  )}
+                  <button className="btn-secondary" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nextService.address)}`, '_blank')}>🗺 Ruta</button>
                 </div>
+              </div>
+            ) : (
+              <div className="next-empty">Aún no tienes servicios aceptados o en curso.</div>
+            )}
+          </div>
 
-            </CarerLayout>
-        </>
-    );
+          <div className="requests-card">
+            <div className="requests-head">
+              <div className="requests-title">Solicitudes</div>
+              {pendingRequests.length > 0 && <span className="requests-badge">{pendingRequests.length} nuevas</span>}
+            </div>
+            {pendingRequests.length === 0 ? (
+              <div style={{ padding: '36px 20px', textAlign: 'center', color: 'var(--t35)', fontSize: 13 }}>
+                No hay solicitudes pendientes
+              </div>
+            ) : pendingRequests.map((request) => {
+              const isExpanded = expandedRequestId === request.id;
+              const isBusy = processingRequestId === request.id;
+
+              return (
+                <div
+                  className="request-item"
+                  key={request.id}
+                  onClick={() => setExpandedRequestId((current) => current === request.id ? null : request.id)}
+                >
+                  <div className="req-top">
+                    <div className="req-client">
+                      <div className="req-av" style={{ background: request.bg }}>{request.av}</div>
+                      <div>
+                        <div className="req-name">{request.name}</div>
+                        <div className="req-type">{request.type}</div>
+                      </div>
+                    </div>
+                    <div className="req-price">{request.price}<span>/h</span></div>
+                  </div>
+                  <div className="req-details">
+                    <span className="req-chip">📅 {request.date}</span>
+                    <span className="req-chip">🕐 {request.time}</span>
+                    <span className="req-chip">⏱ {request.hours}</span>
+                  </div>
+                  {isExpanded && (
+                    <div className="req-expand" onClick={(event) => event.stopPropagation()}>
+                      <div className="req-expand-line"><strong>Dirección:</strong> {request.address}</div>
+                      {request.notes && <div className="req-note"><strong>Notas:</strong> {request.notes}</div>}
+                      <div className="req-btns">
+                        <button className="btn-accept" disabled={isBusy} onClick={() => handleRequestAction(request.id, 'aceptar')}>✓ Aceptar</button>
+                        <button className="btn-decline" disabled={isBusy} onClick={() => handleRequestAction(request.id, 'rechazar')}>✕ Rechazar</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="agenda-card">
+          <div className="sec-title">Servicios de hoy</div>
+          <div className="day-slot-list">
+            {todaySlots.length === 0 ? (
+              <div style={{ color: 'var(--t35)', fontSize: 13 }}>No tienes servicios agendados para hoy.</div>
+            ) : todaySlots.map((slot) => (
+              <div className="slot" key={slot.id}>
+                <div className={`slot-bar ${slot.status}`} />
+                <div className="slot-time">{slot.time}</div>
+                <div style={{ flex: 1 }}>
+                  <div className="slot-name">{slot.name}</div>
+                  <div className="slot-type">{slot.type}</div>
+                </div>
+                <div className={`slot-badge ${slot.status}`}>{slot.status === 'confirmed' ? 'Confirmado' : 'Pendiente'}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bottom-row">
+          <div className="reviews-card">
+            <div className="sec-title">Mis valoraciones</div>
+            <div className="reviews-header">
+              <div>
+                <div className="review-score">4<em>.9</em></div>
+                <div className="review-stars">★★★★★</div>
+                <div className="review-count">{TOTAL_REV} reseñas</div>
+              </div>
+              <div className="review-bars">
+                {RATING_BARS.map((n, i) => (
+                  <div className="rbar-row" key={n}>
+                    <span className="rbar-num">{n}</span>
+                    <div className="rbar-track">
+                      <div className="rbar-fill" style={{ width: `${TOTAL_REV > 0 ? (RATING_VALS[i] / TOTAL_REV * 100) : 0}%` }} />
+                    </div>
+                    <span className="rbar-count">{RATING_VALS[i]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="review-list">
+              {REVIEWS.map((review) => (
+                <div className="review-item" key={review.name}>
+                  <div className="rev-top">
+                    <span className="rev-name">{review.name}</span>
+                    <span className="rev-date">{review.date}</span>
+                  </div>
+                  <div className="rev-stars">{starsStr(review.stars)}</div>
+                  <div className="rev-text">{review.text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="earnings-card">
+            <div className="sec-title">Ganancias</div>
+            <div className="earn-total">
+              <span className="earn-currency">€</span>
+              <span className="earn-num">{carerStats.today_earnings.toFixed(2)}</span>
+            </div>
+            <div className="earn-period">Esta semana · {carerStats.week_completed_hours} horas completadas</div>
+            <div className="earn-breakdown">
+              <div className="earn-sublabel">Resumen actual</div>
+              <div className="earn-row">
+                <span className="earn-row-label"><span className="earn-dot" style={{ background: 'var(--blue-lt)' }} />Ganado hoy</span>
+                <span className="earn-row-val">{currency(carerStats.today_earnings)}</span>
+              </div>
+              <div className="earn-row">
+                <span className="earn-row-label"><span className="earn-dot" style={{ background: 'var(--amber)' }} />Solicitudes pendientes</span>
+                <span className="earn-row-val">{carerStats.pending_requests}</span>
+              </div>
+              <div className="earn-divider" />
+              <div className="earn-row">
+                <span className="earn-row-label" style={{ color: 'var(--t80)', fontWeight: 500 }}>Monto potencial</span>
+                <span className="earn-row-val">{currency(carerStats.pending_amount)}</span>
+              </div>
+            </div>
+            <div className="earn-pending">
+              <span className="earn-pending-label">⏳ Pendiente por confirmar</span>
+              <span className="earn-pending-val">{currency(carerStats.pending_amount)}</span>
+            </div>
+            <div style={{ marginTop: 14 }}>
+              <button className="btn-primary" style={{ width: '100%' }} onClick={() => router.visit('/dashboard/carer/agenda')}>Ver agenda completa</button>
+            </div>
+          </div>
+        </div>
+      </CarerLayout>
+    </>
+  );
 }

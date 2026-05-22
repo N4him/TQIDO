@@ -258,6 +258,7 @@ const SERVICE_ICONS: Record<string, string> = {
 
 /* ── Tipos ── */
 export interface CarerService {
+  id: number;
   tipo: string;
   descripcion: string;
   precio_hora: number | null;
@@ -265,10 +266,20 @@ export interface CarerService {
   oferta_activa: boolean;
 }
 
+export interface CarerAvailabilitySlot {
+  day: string;
+  day_index: number;
+  start: string;
+  end: string;
+  minimum_duration: number;
+  notice_hours: number;
+}
+
 export interface Carer {
   id: number;
   photoUrl: string;
   name: string;
+  initials?: string;
   spec: string;
   verified?: boolean;
   avail: boolean;
@@ -276,6 +287,12 @@ export interface Carer {
   reviews: number;
   cat: string;
   services: CarerService[];
+  bio?: string | null;
+  city?: string | null;
+  address?: string | null;
+  location?: string;
+  availability?: CarerAvailabilitySlot[];
+  active_days?: number;
 }
 
 export interface CarerCardProps {
@@ -424,7 +441,7 @@ export default function CarerCard({
               </span>
             ) : null}
 
-            <button className="btn-book" onClick={() => onBook?.(c)}>
+            <button type="button" className="btn-book" onClick={() => onBook?.(c)}>
               Reservar
             </button>
           </div>

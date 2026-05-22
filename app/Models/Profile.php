@@ -54,6 +54,11 @@ class Profile extends Model
         return $this->hasMany(ServicioPerfil::class, 'perfil_id');
     }
 
+    public function reservasRecibidas()
+    {
+        return $this->hasMany(Reserva::class, 'carer_profile_id');
+    }
+
     public function getCompletionPercentage(): array
     {
         $role = $this->resolveProfileRole();

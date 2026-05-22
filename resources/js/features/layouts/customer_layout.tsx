@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
 
 /* ─────────────────────────────────────────────
@@ -381,6 +382,32 @@ export default function CustomerLayout({
     : 0;
   const nextStep = profileSteps.find((s) => !s.done);
 
+  const handleDropdownItemClick = (item: DropdownItem) => {
+    if (item.onClick) {
+      item.onClick();
+      return;
+    }
+
+    if (item.label === 'Mi perfil') {
+      router.visit('/profile/customer');
+      return;
+    }
+
+    if (item.label === 'Mis reservas') {
+      router.visit('/dashboard/customer/reservas');
+      return;
+    }
+
+    if (item.label === 'Favoritos') {
+      router.visit('/dashboard/customer/favoritos');
+      return;
+    }
+
+    if (item.label === 'Explorar') {
+      router.visit('/dashboard/customer');
+    }
+  };
+
   return (
     <>
       <style>{layoutCss}</style>
@@ -465,7 +492,7 @@ export default function CustomerLayout({
                       onClick={(e) => {
                         e.stopPropagation();
                         setMenuOpen(false);
-                        item.onClick?.();
+                        handleDropdownItemClick(item);
                       }}
                     >
                       <span className="dd-icon">{item.icon}</span>

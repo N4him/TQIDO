@@ -62,4 +62,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(Profile::class);
     }
+
+    public function customerReservas()
+    {
+        return $this->hasMany(Reserva::class, 'customer_user_id');
+    }
+
+    public function carerReservas()
+    {
+        return $this->hasMany(Reserva::class, 'carer_user_id');
+    }
 }

@@ -582,6 +582,18 @@ export default function CarerLayout({
       return;
     }
 
+    if (itemLabel === 'Mis reservas') {
+      router.get(dashboardRoutes.carer.agenda.url());
+      setDropdownOpen(false);
+      return;
+    }
+
+    if (itemLabel === 'Ajustes') {
+      router.get('/settings/profile');
+      setDropdownOpen(false);
+      return;
+    }
+
     onMenuItemClick?.(itemLabel);
     setDropdownOpen(false);
   };

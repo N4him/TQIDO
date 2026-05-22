@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CarerBookingController;
 use App\Http\Controllers\CarerController;
+use App\Http\Controllers\CustomerBookingController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SocialController;
 use Illuminate\Support\Facades\Route;
@@ -33,12 +35,20 @@ Route::prefix('dashboard')->name('dashboard.')->group(function () {
         Route::get('/', [CarerController::class, 'dashboardPreview'])->name('preview');
         Route::get('/agenda', [CarerController::class, 'agenda'])->name('agenda');
         Route::get('/clientes', [CarerController::class, 'clientes'])->name('clientes');
+        Route::get('/solicitudes', [CarerBookingController::class, 'index'])->name('solicitudes.index');
+        Route::patch('/solicitudes/{reserva}/aceptar', [CarerBookingController::class, 'accept'])->name('solicitudes.accept');
+        Route::patch('/solicitudes/{reserva}/rechazar', [CarerBookingController::class, 'reject'])->name('solicitudes.reject');
+        Route::patch('/solicitudes/{reserva}/iniciar', [CarerBookingController::class, 'start'])->name('solicitudes.start');
+        Route::patch('/solicitudes/{reserva}/completar', [CarerBookingController::class, 'complete'])->name('solicitudes.complete');
     });
 
     Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer.')->group(function () {
         Route::get('/', [CustomerController::class, 'dashboardPreview'])->name('preview');
         Route::get('/reservas', [CustomerController::class, 'reservas'])->name('reservas');
         Route::get('/favoritos', [CustomerController::class, 'favoritos'])->name('favoritos');
+        Route::get('/reservas/data', [CustomerBookingController::class, 'index'])->name('reservas.index');
+        Route::post('/reservas', [CustomerBookingController::class, 'store'])->name('reservas.store');
+        Route::patch('/reservas/{reserva}/cancelar', [CustomerBookingController::class, 'cancel'])->name('reservas.cancel');
     });
 });
 
