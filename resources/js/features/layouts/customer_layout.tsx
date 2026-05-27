@@ -63,6 +63,8 @@ html, body {
   font-family: var(--ff-ui);
   color: var(--on-dom);
   -webkit-font-smoothing: antialiased;
+  overflow-y: auto !important;
+  overflow-x: hidden;
 }
 
 body::before {

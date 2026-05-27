@@ -272,7 +272,7 @@ export default function CarerDashboard() {
   const profileCompletion = user?.profile_completion?.percentage ?? 0;
 
   const [online, setOnline] = useState(true);
-  const [activeNav, setActiveNav] = useState('Inicio');
+  const [activeNav, setActiveNav] = useState('Dashboard');
   const [expandedRequestId, setExpandedRequestId] = useState<number | null>(pendingRequests[0]?.id ?? null);
   const [processingRequestId, setProcessingRequestId] = useState<number | null>(null);
 

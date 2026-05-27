@@ -783,6 +783,12 @@ const displayRate = (service: CarerService | null) => {
     : service.precio_hora ?? 0;
 };
 
+const openNativeDatePicker = (input: HTMLInputElement) => {
+  if (typeof input.showPicker === 'function') {
+    input.showPicker();
+  }
+};
+
 export default function TQidoHome() {
   const { auth, carers } = usePage<DashboardCustomerProps>().props;
   const user = auth.user;
@@ -1224,6 +1230,8 @@ export default function TQidoHome() {
                         className="booking-input"
                         value={data.fecha_servicio}
                         min={new Date().toISOString().split('T')[0]}
+                        onClick={(event) => openNativeDatePicker(event.currentTarget)}
+                        onFocus={(event) => openNativeDatePicker(event.currentTarget)}
                         onChange={(event) => setData('fecha_servicio', event.target.value)}
                       />
                       {errors.fecha_servicio && <div className="booking-error">{errors.fecha_servicio}</div>}
@@ -1236,6 +1244,8 @@ export default function TQidoHome() {
                         type="time"
                         className="booking-input"
                         value={data.hora_inicio}
+                        onClick={(event) => openNativeDatePicker(event.currentTarget)}
+                        onFocus={(event) => openNativeDatePicker(event.currentTarget)}
                         onChange={(event) => setData('hora_inicio', event.target.value)}
                       />
                       {errors.hora_inicio && <div className="booking-error">{errors.hora_inicio}</div>}

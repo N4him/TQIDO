@@ -525,7 +525,7 @@ body::after {
 `;
 
 const NAV_LINKS = [
-  { label: 'Inicio', href: dashboardRoutes.carer.preview.url() },
+  { label: 'Dashboard', href: dashboardRoutes.carer.preview.url() },
   { label: 'Agenda', href: dashboardRoutes.carer.agenda.url() },
   { label: 'Clientes', href: dashboardRoutes.carer.clientes.url() },
 ] as const;
@@ -560,7 +560,7 @@ export default function CarerLayout({
   userEmail = 'Sin correo',
   profileCompletion = 0,
   profileCompletionNext = 'Número verificado',
-  activeNav = 'Inicio',
+  activeNav = 'Dashboard',
   onNavChange,
   onMenuItemClick,
   onLogout,
