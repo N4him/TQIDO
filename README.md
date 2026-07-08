@@ -12,6 +12,14 @@ Construida sobre **Laravel 12** con **Inertia.js** y **React 19** (TypeScript), 
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+<p align="center">
+  <img src="docs/screenshots/landing_page.png" alt="Landing page" width="400"/>
+</p>
+<p align="center">
+  <img src="docs/screenshots/registr0.png" alt="Flujo de reserva" width="400"/>
+  <img src="docs/screenshots/login.png" alt="Perfil público del cuidador" width="400"/>
+</p>
+
 ---
 
 ## Tabla de contenido
