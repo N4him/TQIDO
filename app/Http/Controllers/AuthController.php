@@ -293,6 +293,9 @@ class AuthController extends Controller
             'services' => ['nullable', 'array', 'max:3'],
             'services.*.id' => ['nullable', 'integer'],
             'services.*.tipo' => ['required', 'string', 'in:adultos_mayores,ninos,mascotas'],
+            'services.*.precio_hora' => ['nullable', 'numeric', 'min:0'],
+            'services.*.precio_oferta' => ['nullable', 'numeric', 'min:0'],
+            'services.*.oferta_activa' => ['nullable', 'boolean'],
             'services.*.descripcion' => ['nullable', 'string'],
         ], [
             'user_id.required' => 'El ID de usuario es obligatorio.',
@@ -335,6 +338,32 @@ class AuthController extends Controller
             'services.*.tipo.required' => 'Cada servicio debe tener un tipo.',
         ]);
 
+        $validator->after(function ($validator) use ($request) {
+            foreach ($request->input('services', []) as $index => $service) {
+                $descripcion = trim((string) ($service['descripcion'] ?? ''));
+                $precioHora = $service['precio_hora'] ?? null;
+                $precioOferta = $service['precio_oferta'] ?? null;
+                $ofertaActiva = filter_var($service['oferta_activa'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                $hasContent = $descripcion !== '' || $precioHora !== null && $precioHora !== '' || $ofertaActiva || $precioOferta !== null && $precioOferta !== '';
+
+                if (! $hasContent) {
+                    continue;
+                }
+
+                if ($ofertaActiva && ($precioOferta === null || $precioOferta === '')) {
+                    $validator->errors()->add("services.$index.precio_oferta", 'Activa una oferta solo si indicas un precio de oferta.');
+                }
+
+                if ($ofertaActiva && ($precioHora === null || $precioHora === '')) {
+                    $validator->errors()->add("services.$index.precio_hora", 'Define un precio por hora antes de activar una oferta.');
+                }
+
+                if ($ofertaActiva && $precioHora !== null && $precioHora !== '' && $precioOferta !== null && $precioOferta !== '' && (float) $precioOferta > (float) $precioHora) {
+                    $validator->errors()->add("services.$index.precio_oferta", 'El precio de oferta no puede ser mayor que el precio por hora.');
+                }
+            }
+        });
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
@@ -348,146 +377,200 @@ class AuthController extends Controller
                 $user = User::findOrFail($request->user_id);
                 $profile = $user->profile()->firstOrCreate([]);
 
-                $user->update([
-                    'phone' => $request->phone,
-                ]);
-
-                $profile->update([
-                    'dni' => $request->dni,
-                    'fecha_nacimiento' => $request->fecha_nacimiento,
-                    'direccion' => $request->direccion,
-                    'ciudad' => $request->ciudad,
-                    'codigo_postal' => $request->codigo_postal,
-                    'area_ocupacional' => $request->area_ocupacional,
-                    'idiomas' => $request->idiomas,
-                    'descripcion_personal' => $request->descripcion_personal,
-                    'tipo_cuidado' => $request->tipo_cuidado,
-                    'experiencia' => $request->experiencia,
-                    'certificaciones' => $request->certificaciones,
-                    'preferencias' => $request->preferencias,
-                    'dni_frontal' => $request->dni_frontal,
-                    'dni_trasera' => $request->dni_trasera,
-                    'certificados' => $request->certificados,
-                    'descripcion_general_servicio' => $request->descripcion_general_servicio,
-                ]);
-
-                $careProfiles = collect($request->input('care_profiles', []));
-                $careIdsToDelete = $profile->cuidados()->pluck('id')->diff($careProfiles->pluck('id')->filter());
-
-                if ($careIdsToDelete->isNotEmpty()) {
-                    PerfilesCuidado::whereIn('id', $careIdsToDelete)->delete();
+                if ($request->exists('phone')) {
+                    $user->update([
+                        'phone' => $request->input('phone'),
+                    ]);
                 }
 
-                foreach ($careProfiles as $careProfile) {
-                    $careId = $careProfile['id'] ?? null;
-                    $payload = [
-                        'nombre' => $careProfile['nombre'] ?? null,
-                        'rol' => $careProfile['rol'] ?? null,
-                        'especificacion' => $careProfile['especificacion'] ?? null,
-                        'edad' => $careProfile['edad'] ?? null,
-                        'movilidad' => $careProfile['movilidad'] ?? null,
-                        'medicacion' => $careProfile['medicacion'] ?? null,
-                        'alergias' => $careProfile['alergias'] ?? null,
-                        'diagnostico' => $careProfile['diagnostico'] ?? null,
-                        'contacto_emergencia' => $careProfile['contacto_emergencia'] ?? null,
-                    ];
+                $profileFields = [
+                    'dni',
+                    'fecha_nacimiento',
+                    'direccion',
+                    'ciudad',
+                    'codigo_postal',
+                    'area_ocupacional',
+                    'idiomas',
+                    'descripcion_personal',
+                    'tipo_cuidado',
+                    'experiencia',
+                    'certificaciones',
+                    'preferencias',
+                    'dni_frontal',
+                    'dni_trasera',
+                    'certificados',
+                    'descripcion_general_servicio',
+                ];
 
-                    if ($careId) {
-                        $profile->cuidados()->where('id', $careId)->update($payload);
-                    } else {
-                        $profile->cuidados()->create($payload);
+                $profilePayload = [];
+                foreach ($profileFields as $field) {
+                    if ($request->exists($field)) {
+                        $profilePayload[$field] = $request->input($field);
                     }
                 }
 
-                $addresses = collect($request->input('addresses', []))->values();
-
-                if ($addresses->isNotEmpty() && ! $addresses->contains(fn ($address) => ! empty($address['is_default']))) {
-                    $addresses[0] = [
-                        ...$addresses[0],
-                        'is_default' => true,
-                    ];
+                if (! empty($profilePayload)) {
+                    $profile->update($profilePayload);
                 }
 
-                if ($addresses->where(fn ($address) => ! empty($address['is_default']))->count() > 1) {
-                    $defaultIndex = $addresses->search(fn ($address) => ! empty($address['is_default']));
-                    $addresses = $addresses->map(function ($address, $index) use ($defaultIndex) {
-                        $address['is_default'] = $index === $defaultIndex;
+                if ($request->exists('care_profiles')) {
+                    $careProfiles = collect($request->input('care_profiles', []));
+                    $careIdsToDelete = $profile->cuidados()->pluck('id')->diff($careProfiles->pluck('id')->filter());
 
-                        return $address;
-                    });
-                }
+                    if ($careIdsToDelete->isNotEmpty()) {
+                        PerfilesCuidado::whereIn('id', $careIdsToDelete)->delete();
+                    }
 
-                $addressIdsToDelete = $profile->direcciones()->pluck('id')->diff($addresses->pluck('id')->filter());
+                    foreach ($careProfiles as $careProfile) {
+                        $careId = $careProfile['id'] ?? null;
+                        $payload = [
+                            'nombre' => $careProfile['nombre'] ?? null,
+                            'rol' => $careProfile['rol'] ?? null,
+                            'especificacion' => $careProfile['especificacion'] ?? null,
+                            'edad' => $careProfile['edad'] ?? null,
+                            'movilidad' => $careProfile['movilidad'] ?? null,
+                            'medicacion' => $careProfile['medicacion'] ?? null,
+                            'alergias' => $careProfile['alergias'] ?? null,
+                            'diagnostico' => $careProfile['diagnostico'] ?? null,
+                            'contacto_emergencia' => $careProfile['contacto_emergencia'] ?? null,
+                        ];
 
-                if ($addressIdsToDelete->isNotEmpty()) {
-                    DireccionesPerfil::whereIn('id', $addressIdsToDelete)->delete();
-                }
-
-                foreach ($addresses as $address) {
-                    $addressId = $address['id'] ?? null;
-                    $payload = [
-                        'label' => $address['label'] ?? null,
-                        'address_line_1' => $address['address_line_1'] ?? null,
-                        'address_line_2' => $address['address_line_2'] ?? null,
-                        'neighborhood' => $address['neighborhood'] ?? null,
-                        'reference' => $address['reference'] ?? null,
-                        'type' => $address['type'] ?? 'home',
-                        'is_default' => ! empty($address['is_default']),
-                    ];
-
-                    if ($addressId) {
-                        $profile->direcciones()->where('id', $addressId)->update($payload);
-                    } else {
-                        $profile->direcciones()->create($payload);
+                        if ($careId) {
+                            $profile->cuidados()->where('id', $careId)->update($payload);
+                        } else {
+                            $profile->cuidados()->create($payload);
+                        }
                     }
                 }
 
-                $availabilitySlots = collect($request->input('availability_slots', []));
-                $availabilityIdsToDelete = $profile->disponibilidades()->pluck('id')->diff($availabilitySlots->pluck('id')->filter());
+                if ($request->exists('addresses')) {
+                    $addresses = collect($request->input('addresses', []))->values();
 
-                if ($availabilityIdsToDelete->isNotEmpty()) {
-                    DisponibilidadPerfil::whereIn('id', $availabilityIdsToDelete)->delete();
-                }
+                    if ($addresses->isNotEmpty() && ! $addresses->contains(fn ($address) => ! empty($address['is_default']))) {
+                        $addresses[0] = [
+                            ...$addresses[0],
+                            'is_default' => true,
+                        ];
+                    }
 
-                foreach ($availabilitySlots as $slot) {
-                    $slotId = $slot['id'] ?? null;
-                    $payload = [
-                        'dia_semana' => $slot['dia_semana'] ?? null,
-                        'hora_inicio' => $slot['hora_inicio'] ?? null,
-                        'hora_fin' => $slot['hora_fin'] ?? null,
-                        'duracion_minima_minutos' => $slot['duracion_minima_minutos'] ?? null,
-                        'aviso_previo_horas' => $slot['aviso_previo_horas'] ?? null,
-                        'observaciones' => $slot['observaciones'] ?? null,
-                    ];
+                    if ($addresses->where(fn ($address) => ! empty($address['is_default']))->count() > 1) {
+                        $defaultIndex = $addresses->search(fn ($address) => ! empty($address['is_default']));
+                        $addresses = $addresses->map(function ($address, $index) use ($defaultIndex) {
+                            $address['is_default'] = $index === $defaultIndex;
 
-                    if ($slotId) {
-                        $profile->disponibilidades()->where('id', $slotId)->update($payload);
-                    } else {
-                        $profile->disponibilidades()->create($payload);
+                            return $address;
+                        });
+                    }
+
+                    $addressIdsToDelete = $profile->direcciones()->pluck('id')->diff($addresses->pluck('id')->filter());
+
+                    if ($addressIdsToDelete->isNotEmpty()) {
+                        DireccionesPerfil::whereIn('id', $addressIdsToDelete)->delete();
+                    }
+
+                    foreach ($addresses as $address) {
+                        $addressId = $address['id'] ?? null;
+                        $payload = [
+                            'label' => $address['label'] ?? null,
+                            'address_line_1' => $address['address_line_1'] ?? null,
+                            'address_line_2' => $address['address_line_2'] ?? null,
+                            'neighborhood' => $address['neighborhood'] ?? null,
+                            'reference' => $address['reference'] ?? null,
+                            'type' => $address['type'] ?? 'home',
+                            'is_default' => ! empty($address['is_default']),
+                        ];
+
+                        if ($addressId) {
+                            $profile->direcciones()->where('id', $addressId)->update($payload);
+                        } else {
+                            $profile->direcciones()->create($payload);
+                        }
                     }
                 }
 
-                $services = collect($request->input('services', []))->unique('tipo')->values();
-                $serviceIdsToDelete = $profile->servicios()->pluck('id')->diff($services->pluck('id')->filter());
+                if ($request->exists('availability_slots')) {
+                    $availabilitySlots = collect($request->input('availability_slots', []));
+                    $availabilityIdsToDelete = $profile->disponibilidades()->pluck('id')->diff($availabilitySlots->pluck('id')->filter());
 
-                if ($serviceIdsToDelete->isNotEmpty()) {
-                    ServicioPerfil::whereIn('id', $serviceIdsToDelete)->delete();
+                    if ($availabilityIdsToDelete->isNotEmpty()) {
+                        DisponibilidadPerfil::whereIn('id', $availabilityIdsToDelete)->delete();
+                    }
+
+                    foreach ($availabilitySlots as $slot) {
+                        $slotId = $slot['id'] ?? null;
+                        $payload = [
+                            'dia_semana' => $slot['dia_semana'] ?? null,
+                            'hora_inicio' => $slot['hora_inicio'] ?? null,
+                            'hora_fin' => $slot['hora_fin'] ?? null,
+                            'duracion_minima_minutos' => $slot['duracion_minima_minutos'] ?? null,
+                            'aviso_previo_horas' => $slot['aviso_previo_horas'] ?? null,
+                            'observaciones' => $slot['observaciones'] ?? null,
+                        ];
+
+                        if ($slotId) {
+                            $profile->disponibilidades()->where('id', $slotId)->update($payload);
+                        } else {
+                            $profile->disponibilidades()->create($payload);
+                        }
+                    }
                 }
 
-                foreach ($services as $service) {
-                    $serviceId = $service['id'] ?? null;
-                    $payload = [
-                        'tipo' => $service['tipo'] ?? null,
-                        'descripcion' => $service['descripcion'] ?? null,
-                    ];
+                if ($request->exists('services')) {
+                    $services = collect($request->input('services', []))
+                        ->map(function ($service) {
+                            $service['descripcion'] = trim((string) ($service['descripcion'] ?? ''));
 
-                    if ($serviceId) {
-                        $profile->servicios()->where('id', $serviceId)->update($payload);
-                    } else {
-                        $profile->servicios()->updateOrCreate(
-                            ['tipo' => $payload['tipo']],
-                            $payload
-                        );
+                            return $service;
+                        })
+                        ->filter(function ($service) {
+                            $descripcion = $service['descripcion'] ?? '';
+                            $precioHora = $service['precio_hora'] ?? null;
+                            $precioOferta = $service['precio_oferta'] ?? null;
+                            $ofertaActiva = filter_var($service['oferta_activa'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+                            return $descripcion !== ''
+                                || ($precioHora !== null && $precioHora !== '')
+                                || ($precioOferta !== null && $precioOferta !== '')
+                                || $ofertaActiva;
+                        })
+                        ->unique('tipo')
+                        ->values();
+                    $shouldReplaceServices = $request->boolean('services_replace', false);
+
+                    if ($shouldReplaceServices) {
+                        $serviceIdsToDelete = $profile->servicios()->pluck('id')->diff($services->pluck('id')->filter());
+
+                        if ($serviceIdsToDelete->isNotEmpty()) {
+                            ServicioPerfil::whereIn('id', $serviceIdsToDelete)->delete();
+                        }
+                    }
+
+                    foreach ($services as $service) {
+                        $serviceId = $service['id'] ?? null;
+                        $descripcion = $service['descripcion'] ?? '';
+                        $precioHora = $service['precio_hora'] ?? null;
+                        $precioOferta = $service['precio_oferta'] ?? null;
+                        $ofertaActiva = filter_var($service['oferta_activa'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                        $estado = 'inactivo';
+
+                        $payload = [
+                            'tipo' => $service['tipo'] ?? null,
+                            'precio' => $precioHora,
+                            'precio_hora' => $precioHora,
+                            'precio_oferta' => $ofertaActiva ? $precioOferta : null,
+                            'oferta_activa' => $ofertaActiva && $precioOferta !== null && $precioOferta !== '',
+                            'descripcion' => $descripcion !== '' ? $descripcion : null,
+                            'estado' => $estado,
+                        ];
+
+                        if ($serviceId) {
+                            $profile->servicios()->where('id', $serviceId)->update($payload);
+                        } else {
+                            $profile->servicios()->updateOrCreate(
+                                ['tipo' => $payload['tipo']],
+                                $payload
+                            );
+                        }
                     }
                 }
 
@@ -503,6 +586,107 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Error al actualizar el perfil.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function apply(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+        ], [
+            'user_id.required' => 'El ID de usuario es obligatorio.',
+            'user_id.exists' => 'El ID de usuario no existe.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Datos invÃ¡lidos.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $result = DB::transaction(function () use ($request) {
+                $user = User::findOrFail($request->user_id);
+                $profile = $user->profile()->firstOrCreate([]);
+                $services = $profile->servicios()->get();
+
+                if ($services->isEmpty()) {
+                    return [
+                        'activated' => 0,
+                        'profile' => $profile->load('cuidados', 'direcciones', 'disponibilidades', 'servicios'),
+                    ];
+                }
+
+                $activatableIds = $services
+                    ->filter(fn ($service) => filled($service->descripcion) && $service->precio_hora !== null)
+                    ->pluck('id');
+
+                $activeIds = $services
+                    ->where('estado', 'activo')
+                    ->pluck('id');
+
+                if ($activeIds->isNotEmpty()) {
+                    $profile->servicios()->whereIn('id', $activeIds)->update(['estado' => 'inactivo']);
+
+                    return [
+                        'activated' => 0,
+                        'deactivated' => $activeIds->count(),
+                        'profile' => $profile->load('cuidados', 'direcciones', 'disponibilidades', 'servicios'),
+                    ];
+                }
+
+                if ($activatableIds->isNotEmpty()) {
+                    $profile->servicios()->whereIn('id', $activatableIds)->update(['estado' => 'activo']);
+                }
+
+                $inactiveIds = $services->pluck('id')->diff($activatableIds);
+                if ($inactiveIds->isNotEmpty()) {
+                    $profile->servicios()->whereIn('id', $inactiveIds)->update(['estado' => 'inactivo']);
+                }
+
+                return [
+                    'activated' => $activatableIds->count(),
+                    'deactivated' => 0,
+                    'profile' => $profile->load('cuidados', 'direcciones', 'disponibilidades', 'servicios'),
+                ];
+            });
+
+            if (($result['deactivated'] ?? 0) > 0) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $result['deactivated'] === 1
+                        ? 'Se desactivó 1 servicio del perfil.'
+                        : "Se desactivaron {$result['deactivated']} servicios del perfil.",
+                    'profile' => $result['profile'],
+                    'profile_completion' => $result['profile']->getCompletionPercentage(),
+                ], 200);
+            }
+
+            if ($result['activated'] === 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No hay servicios completos para activar. Agrega precio y detalles primero.',
+                    'profile' => $result['profile'],
+                    'profile_completion' => $result['profile']->getCompletionPercentage(),
+                ], 422);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => $result['activated'] === 1
+                    ? 'Se activÃ³ 1 servicio correctamente.'
+                    : "Se activaron {$result['activated']} servicios correctamente.",
+                'profile' => $result['profile'],
+                'profile_completion' => $result['profile']->getCompletionPercentage(),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se pudieron activar los servicios.',
                 'error' => $e->getMessage(),
             ], 500);
         }

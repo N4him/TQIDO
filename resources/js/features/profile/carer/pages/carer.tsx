@@ -313,6 +313,16 @@ const css = `
   transform: translateY(-1px);
 }
 
+.btn-apply.danger {
+  background: linear-gradient(135deg, #D44030 0%, #E45A4B 100%);
+  box-shadow: 0 3px 14px rgba(212,64,48,.32);
+}
+
+.btn-apply.danger:hover {
+  background: linear-gradient(135deg, #b93527 0%, #d84b3f 100%);
+  box-shadow: 0 6px 22px rgba(212,64,48,.42);
+}
+
 .btn-apply:active { transform: translateY(0); }
 
 .btn-apply:disabled {
@@ -1065,6 +1075,7 @@ export default function TQidoClientProfile() {
 
   const completedCount = Math.max(0, PROFILE_COMPLETION_FIELDS.length - (completion?.missing?.length ?? PROFILE_COMPLETION_FIELDS.length));
   const nextMissingField = completion?.missing?.[0] ?? null;
+  const hasActiveServices = Boolean(savedProfile?.servicios?.some((service) => service.estado === 'activo'));
 
   const resetForms = () => {
     setProfileForm({ user_id: Number(user?.id ?? 0), phone: user?.phone ?? '', fecha_nacimiento: savedProfile?.fecha_nacimiento ?? '', ciudad: savedProfile?.ciudad ?? '', direccion: savedProfile?.direccion ?? '' });
@@ -1077,17 +1088,36 @@ export default function TQidoClientProfile() {
   const saveProfile = async () => {
     setSaving(true); setSaveError(''); setSaveOk('');
     try {
+      const sanitizedServices = services
+        .map((s) => {
+          const descripcion = s.descripcion.trim();
+          const precioHora = s.precio_hora ? Number(s.precio_hora) : null;
+          const precioOferta = s.precio_oferta ? Number(s.precio_oferta) : null;
+          const ofertaActiva = s.oferta_activa && precioOferta != null;
+          const hasContent = descripcion !== '' || precioHora != null || precioOferta != null;
+
+          if (!hasContent) {
+            return null;
+          }
+
+          return {
+            ...s,
+            descripcion,
+            precio_hora: precioHora,
+            precio_oferta: ofertaActiva ? precioOferta : null,
+            oferta_activa: ofertaActiva,
+          };
+        })
+        .filter((service): service is NonNullable<typeof service> => service !== null);
+
       const response = await fetch('/api/update-profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
           ...profileForm,
           descripcion_general_servicio: serviceDescription,
-          services: services.map((s) => ({
-            ...s,
-            precio_hora:   s.precio_hora   ? Number(s.precio_hora)   : null,
-            precio_oferta: s.precio_oferta ? Number(s.precio_oferta) : null,
-          })),
+          services: sanitizedServices,
+          services_replace: true,
           addresses,
           availability_slots: availabilitySlots.map((slot) => ({
             ...slot,
@@ -1124,18 +1154,25 @@ export default function TQidoClientProfile() {
 
   /* ── Postularme handler ── */
   const handleApply = async () => {
-    setApplying(true);
+    setApplying(true); setSaveError(''); setSaveOk('');
     try {
       const response = await fetch('/api/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ user_id: Number(user?.id ?? 0) }),
       });
       const data = await response.json();
+      if (data.profile) {
+        const updated = data.profile as UserProfile;
+        setSavedProfile(updated);
+        setCompletion((data.profile_completion ?? null) as ProfileCompletion | null);
+        setServices(normalizeServices(updated?.servicios));
+      }
       if (!response.ok) {
-        setSaveError(data.message ?? 'No se pudo enviar la postulación.');
+        setSaveError(data.message ?? 'No se pudo activar los servicios.');
         return;
       }
-      setSaveOk(data.message ?? '¡Postulación enviada correctamente!');
+      setSaveOk(data.message ?? 'Servicios activados correctamente.');
     } catch {
       setSaveError('Hubo un problema de conexión. Inténtalo de nuevo.');
     } finally {
@@ -1228,12 +1265,12 @@ export default function TQidoClientProfile() {
 
                   {/* ── Postularme button ── */}
                   <button
-                    className="btn-apply"
+                    className={`btn-apply${hasActiveServices ? ' danger' : ''}`}
                     onClick={handleApply}
                     disabled={applying || saving}
                   >
                     <span className="btn-apply-dot" />
-                    {applying ? 'Enviando postulación…' : 'Postularme como cuidador'}
+                    {applying ? (hasActiveServices ? 'Inactivando servicios...' : 'Activando servicios...') : (hasActiveServices ? 'Inactivar servicios' : 'Activar servicios')}
                   </button>
                 </div>
               </div>

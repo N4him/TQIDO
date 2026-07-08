@@ -48,6 +48,7 @@ html, body {
   font-family: var(--ff-s);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  overflow-y: auto !important;
 }
 
 body {
@@ -524,7 +525,7 @@ body::after {
 `;
 
 const NAV_LINKS = [
-  { label: 'Inicio', href: dashboardRoutes.carer.preview.url() },
+  { label: 'Dashboard', href: dashboardRoutes.carer.preview.url() },
   { label: 'Agenda', href: dashboardRoutes.carer.agenda.url() },
   { label: 'Clientes', href: dashboardRoutes.carer.clientes.url() },
 ] as const;
@@ -559,7 +560,7 @@ export default function CarerLayout({
   userEmail = 'Sin correo',
   profileCompletion = 0,
   profileCompletionNext = 'Número verificado',
-  activeNav = 'Inicio',
+  activeNav = 'Dashboard',
   onNavChange,
   onMenuItemClick,
   onLogout,
@@ -577,6 +578,18 @@ export default function CarerLayout({
   const handleMenuItemClick = (itemLabel: string) => {
     if (itemLabel === 'Mi perfil') {
       router.get(profileRoutes.carer.preview.url());
+      setDropdownOpen(false);
+      return;
+    }
+
+    if (itemLabel === 'Mis reservas') {
+      router.get(dashboardRoutes.carer.agenda.url());
+      setDropdownOpen(false);
+      return;
+    }
+
+    if (itemLabel === 'Ajustes') {
+      router.get('/settings/profile');
       setDropdownOpen(false);
       return;
     }

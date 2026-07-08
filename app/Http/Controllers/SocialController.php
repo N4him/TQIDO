@@ -68,9 +68,7 @@ class SocialController extends Controller
                         'name' => $socialUser->getName(),
                     ]);
 
-                    return redirect()->route('register', [
-                        'social_signup' => 1,
-                    ]);
+                    return redirect()->to(url('/register?social_signup=1'));
                 }
 
                 $user = User::create([

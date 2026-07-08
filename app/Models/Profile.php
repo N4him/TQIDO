@@ -54,6 +54,11 @@ class Profile extends Model
         return $this->hasMany(ServicioPerfil::class, 'perfil_id');
     }
 
+    public function reservasRecibidas()
+    {
+        return $this->hasMany(Reserva::class, 'carer_profile_id');
+    }
+
     public function getCompletionPercentage(): array
     {
         $role = $this->resolveProfileRole();
@@ -80,6 +85,7 @@ class Profile extends Model
             $relations = [
                 'disponibilidades' => fn () => $this->disponibilidades()->exists(),
                 'servicios' => fn () => $this->servicios()
+                    ->whereNotNull('precio_hora')
                     ->whereNotNull('descripcion')
                     ->where('descripcion', '!=', '')
                     ->exists(),

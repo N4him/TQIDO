@@ -7,4 +7,5 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 Route::post('/create-profile', [AuthController::class, 'createProfile'])->name('api.createProfile');
 Route::put('/update-profile', [AuthController::class, 'updateProfile'])->name('api.updateProfile');
+Route::post('/apply', [AuthController::class, 'apply'])->name('api.apply');
 Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout')->middleware('auth:sanctum');

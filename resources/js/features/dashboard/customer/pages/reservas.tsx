@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 const layoutCss = `
@@ -108,6 +109,7 @@ const pageCss = `
   padding-bottom:var(--s3);
   animation:fadeUp .45s cubic-bezier(0.22,0.68,0,1) both .14s;
 }
+.results-actions { display:flex; align-items:center; gap:8px; }
 .results-text { font-size:12px; color:var(--on-dom-60); }
 .results-text strong { font-family:var(--ff-d); font-size:15px; color:var(--on-dom); font-weight:400; font-style:italic; margin-right:4px; }
 
@@ -478,12 +480,23 @@ export default function MisReservas() {
         <div className="nav-logo"><span className="nav-logo-text">TQido</span></div>
         <div className="nav-center">
           {navLinks.map((l: string) => (
-            <button key={l} className={`nav-pill${activeNav === l ? ' active' : ''}`} onClick={() => setActiveNav(l)}>{l}</button>
+            <button
+              key={l}
+              className={`nav-pill${activeNav === l ? ' active' : ''}`}
+              onClick={() => {
+                setActiveNav(l);
+                if (l === 'Explorar') router.visit('/dashboard/customer');
+                if (l === 'Mis reservas') router.visit('/dashboard/customer/reservas');
+                if (l === 'Favoritos') router.visit('/dashboard/customer/favoritos');
+              }}
+            >
+              {l}
+            </button>
           ))}
         </div>
         <div className="nav-right">
           <button className="nav-notif">🔔<div className="nav-notif-dot" /></button>
-          <div className="nav-avatar-trigger"><div className="nav-avatar">SG</div></div>
+          <div className="nav-avatar-trigger" onClick={() => router.visit('/profile/customer')}><div className="nav-avatar">SG</div></div>
         </div>
       </nav>
 
@@ -521,6 +534,9 @@ export default function MisReservas() {
             reserva{filtered.length !== 1 ? 's' : ''}
             {filter !== 'todas' ? ` · ${FILTERS.find((f: FilterItem) => f.key === filter)?.label}` : ''}
           </span>
+          <div className="results-actions">
+            <button className="btn-s" onClick={() => router.visit('/profile/customer')}>Mi perfil</button>
+          </div>
         </div>
 
         {/* LIST */}
