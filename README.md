@@ -19,8 +19,14 @@ Construida sobre **Laravel 12** con **Inertia.js** y **React 19** (TypeScript), 
   <img src="docs/screenshots/registr0.png" alt="Flujo de reserva" width="400"/>
   <img src="docs/screenshots/login.png" alt="Perfil público del cuidador" width="400"/>
 </p>
-
----
+<p align="center">
+  <img src="docs/screenshots/cuidador.png" alt="Flujo de reserva" width="400"/>
+  <img src="docs/screenshots/usuario.png" alt="Perfil público del cuidador" width="400"/>
+</p>
+<p align="center">
+  <img src="docs/screenshots/perfil_cuidador.png" alt="Flujo de reserva" width="400"/>
+  <img src="docs/screenshots/perfil_usuario.png" alt="Perfil público del cuidador" width="400"/>
+</p>
 
 ## Tabla de contenido
 
